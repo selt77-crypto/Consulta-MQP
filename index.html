@@ -22,17 +22,16 @@ border-radius:15px;
 box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
-/* BOTONES */
-.btn{
-background:#e5e7eb;
-padding:6px 12px;
-border-radius:10px;
-font-weight:bold;
-transition:0.3s;
+/* BOTONES PRO */
+button{
+transition: all 0.15s ease;
 }
-.btn:hover{
-background:#d1d5db;
-transform:scale(1.05);
+button:active{
+transform: scale(0.95);
+box-shadow: inset 0 4px 8px rgba(0,0,0,0.3);
+}
+button:hover{
+filter: brightness(0.95);
 }
 
 /* DOCUMENTO */
@@ -45,8 +44,6 @@ padding:2cm;
 position:relative;
 box-shadow:0 0 15px rgba(0,0,0,0.4);
 }
-
-/* MARCA DE AGUA */
 .hoja::before{
 content:"";
 position:absolute;
@@ -60,21 +57,11 @@ background-size:contain;
 opacity:0.07;
 }
 
-/* LOADER */
-.loader{
-display:flex;
-justify-content:center;
-margin-top:10px;
-}
-.loader div{
-width:10px;height:10px;margin:5px;background:#2563eb;border-radius:50%;
-animation:bounce 0.6s infinite alternate;
-}
-.loader div:nth-child(2){animation-delay:0.2s;}
-.loader div:nth-child(3){animation-delay:0.4s;}
-@keyframes bounce{
-from{transform:translateY(0)}
-to{transform:translateY(-10px)}
+/* BARRA PROGRESO */
+@keyframes progreso{
+0%{width:0%;}
+50%{width:80%;}
+100%{width:100%;}
 }
 </style>
 </head>
@@ -130,9 +117,20 @@ to{transform:translateY(-10px)}
 
 <button onclick="analizar()" class="bg-yellow-500 px-4 py-2 font-bold">Analizar</button>
 
-<!-- LOADER -->
-<div id="loader" class="loader hidden">
-<div></div><div></div><div></div>
+<!-- LOADER PRO -->
+<div id="loader" class="hidden mt-4">
+<div id="textoLoader" style="color:white; font-weight:bold; margin-bottom:5px;">
+🔄 Analizando caso...
+</div>
+
+<div style="width:100%; background:#ccc; border-radius:10px; overflow:hidden;">
+<div style="
+width:0%;
+height:10px;
+background:linear-gradient(90deg,#2563eb,#60a5fa);
+animation:progreso 2s infinite;
+"></div>
+</div>
 </div>
 
 <!-- DOCUMENTO -->
@@ -141,15 +139,14 @@ to{transform:translateY(-10px)}
 <textarea id="editor" class="w-full h-40 mt-2 hidden border p-2"></textarea>
 
 <div class="mt-2 flex gap-2 flex-wrap">
-<button class="btn" onclick="editar()">Editar</button>
-<button class="btn" onclick="guardar()">Guardar</button>
+<button class="bg-gray-200 px-3 py-2 rounded" onclick="editar()">Editar</button>
+<button class="bg-gray-300 px-3 py-2 rounded" onclick="guardar()">Guardar</button>
 </div>
 
 </div>
 
 <script>
 
-// 🔥 TU BACKEND REAL
 const URL = "https://consulta-backend-eg98.onrender.com";
 
 let texto = "";
@@ -173,17 +170,51 @@ document.getElementById("usuario").innerText="Rol: " + rol;
 // ANALIZAR
 async function analizar(){
 
-let caso = document.getElementById("caso").value;
+let caso = document.getElementById("caso").value.toLowerCase();
 
 if(!caso){
 alert("Debe ingresar un caso");
 return;
 }
 
+// MOSTRAR LOADER
 document.getElementById("loader").classList.remove("hidden");
 
-try{
+// MENSAJES DINÁMICOS
+let mensajes = [
+"Analizando comportamiento...",
+"Revisando normativa...",
+"Aplicando Ley 1620...",
+"Generando acta..."
+];
 
+let i = 0;
+
+let intervalo = setInterval(()=>{
+document.getElementById("textoLoader").innerText = "🔄 " + mensajes[i % mensajes.length];
+i++;
+},1500);
+
+// RESPUESTA RÁPIDA
+let respuestaRapida = "";
+
+if(caso.includes("insulto") || caso.includes("groser")){
+respuestaRapida = "TIPO II - Agresión verbal\n\nSe requiere llamado de atención y seguimiento.";
+}
+else if(caso.includes("golpe") || caso.includes("pelea")){
+respuestaRapida = "TIPO III - Agresión física\n\nSe activa ruta disciplinaria.";
+}
+
+if(respuestaRapida !== ""){
+texto = respuestaRapida;
+mostrar(texto);
+clearInterval(intervalo);
+document.getElementById("loader").classList.add("hidden");
+return;
+}
+
+// IA
+try{
 const res = await fetch(URL + "/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -200,27 +231,20 @@ mostrar(texto);
 mostrar("⚠️ Error de conexión con el servidor");
 }
 
+clearInterval(intervalo);
 document.getElementById("loader").classList.add("hidden");
 }
 
-// MOSTRAR DOCUMENTO
+// MOSTRAR
 function mostrar(t){
-
-let html = `
-<div style="text-align:center;">
+preview.innerHTML = `
+<center>
 <img src="escudo.png" width="80"><br>
-<b>ACTA DE CONVIVENCIA ESCOLAR</b><br>
-INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA
-<hr>
-</div>
-
-<p style="text-align:justify;">
-${t.replace(/\n/g,"<br>")}
-</p>
+<b>ACTA DE CONVIVENCIA</b><br><hr>
+</center>
+<p>${t.replace(/\n/g,"<br>")}</p>
 `;
-
-document.getElementById("preview").innerHTML = html;
-document.getElementById("preview").classList.remove("hidden");
+preview.classList.remove("hidden");
 }
 
 // EDITAR
