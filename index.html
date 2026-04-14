@@ -13,36 +13,23 @@ background:linear-gradient(rgba(15,42,68,0.85), rgba(30,58,95,0.85)),
 url("fondo_estudiantes.jpg");
 background-size:cover;
 }
-
 .card{
 background:rgba(255,255,255,0.95);
 padding:15px;
 border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
-
 .btn{
 background:#e5e7eb;
 padding:6px 12px;
 border-radius:10px;
 font-weight:bold;
-transition:0.3s;
 }
-.btn:hover{
-background:#d1d5db;
-transform:scale(1.05);
-}
-
 .hoja{
 background:white;
-width:21cm;
-min-height:29.7cm;
-margin:20px auto;
-padding:2cm;
+padding:40px;
+margin-top:20px;
 position:relative;
-box-shadow:0 0 15px rgba(0,0,0,0.4);
 }
-
 .hoja::before{
 content:"";
 position:absolute;
@@ -52,163 +39,66 @@ transform:translate(-50%,-50%);
 width:300px;
 height:300px;
 background:url("escudo.png") no-repeat center;
-background-size:contain;
-opacity:0.07;
+opacity:0.08;
 }
 </style>
 </head>
 
 <body class="p-4">
 
-<!-- LOGIN -->
-<div id="login" class="flex items-center justify-center h-screen">
-<div class="card w-full max-w-sm text-center">
+<div class="card max-w-4xl mx-auto">
 
-<img src="escudo.png" class="w-24 mx-auto mb-3">
+<h2 class="text-center font-bold">CONVIVENCIA ESCOLAR</h2>
 
-<h2 class="font-bold mb-2">Ingreso</h2>
+<input id="estudiante" placeholder="Estudiante" class="w-full p-2 border mb-2">
+<input id="caso" placeholder="Caso" class="w-full p-2 border mb-2">
 
-<select id="rol" class="w-full p-2 border mb-2">
-<option value="">Seleccione rol</option>
-<option>Docente</option>
-<option>Directivo</option>
-<option>Administrativo</option>
-<option>Estudiante</option>
-<option>Otro</option>
-</select>
+<button onclick="analizar()" class="bg-yellow-500 p-2 w-full">Analizar</button>
 
-<input id="pass" type="password" placeholder="Contraseña" class="w-full p-2 border mb-2">
+<div id="resultado" class="hoja hidden"></div>
 
-<button onclick="login()" class="bg-yellow-500 w-full p-2 font-bold">Ingresar</button>
-
-<p id="error" class="text-red-500 mt-2"></p>
-
-</div>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden max-w-5xl mx-auto">
-
-<div class="card text-center mb-3">
-<img src="escudo.png" class="w-16 mx-auto mb-2">
-<h1 class="font-bold text-lg">INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA</h1>
-<p id="usuario"></p>
-</div>
-
-<div class="card text-sm mb-3">
-<b>📘 Instrucciones:</b><br>
-1. Ingrese estudiante<br>
-2. Describa el caso<br>
-3. Analice<br>
-4. Edite si desea<br>
-5. Descargue documento
-</div>
-
-<input id="estudiante" placeholder="Nombre del estudiante" class="w-full p-2 border mb-2">
-<input id="caso" placeholder="Describe el caso" class="w-full p-2 border mb-2">
-
-<button onclick="analizar()" class="bg-yellow-500 px-4 py-2 font-bold">Analizar</button>
-
-<div id="loader" class="hidden text-center mt-2">🔄 Analizando caso...</div>
-
-<!-- DOCUMENTO -->
-<div id="preview" class="hoja hidden"></div>
-
-<textarea id="editor" class="w-full h-40 mt-2 hidden border p-2"></textarea>
-
-<div class="mt-2 flex gap-2 flex-wrap">
-<button class="btn" onclick="editar()">Editar</button>
-<button class="btn" onclick="guardar()">Guardar</button>
-</div>
+<h3 class="mt-4 font-bold">Historial</h3>
+<div id="historial"></div>
 
 </div>
 
 <script>
 
-const BACKEND_URL = "https://TU_BACKEND.onrender.com/analizar";
+const URL = "https://TU_BACKEND.onrender.com";
 
-let texto = "";
-let textoFinal = "";
-
-// LOGIN
-function login(){
-let rol = document.getElementById("rol").value;
-let pass = document.getElementById("pass").value;
-
-if(!rol || !pass){
-document.getElementById("error").innerText="Complete los datos";
-return;
-}
-
-document.getElementById("login").style.display="none";
-document.getElementById("app").classList.remove("hidden");
-document.getElementById("usuario").innerText="Rol: " + rol;
-}
-
-// ANALIZAR (CONECTADO AL BACKEND)
 async function analizar(){
 
+let estudiante = document.getElementById("estudiante").value;
 let caso = document.getElementById("caso").value;
 
-if(!caso){
-alert("Debe ingresar un caso");
-return;
-}
-
-document.getElementById("loader").classList.remove("hidden");
-
-try{
-
-const res = await fetch(BACKEND_URL,{
+const res = await fetch(URL+"/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({caso})
+body:JSON.stringify({caso, estudiante})
 });
 
 const data = await res.json();
 
-texto = data.respuesta;
-
-mostrar(texto);
-
-}catch(e){
-
-mostrar("⚠️ Error de conexión con el servidor");
-
+mostrar(data.respuesta);
+cargarHistorial();
 }
 
-document.getElementById("loader").classList.add("hidden");
-}
-
-// MOSTRAR DOCUMENTO
 function mostrar(t){
-
-let html = `
-<div style="text-align:center;">
-<img src="escudo.png" width="80"><br>
-<b>ACTA DE CONVIVENCIA ESCOLAR</b><br>
-INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA
-<hr>
-</div>
-
-<p style="text-align:justify;">
-${t.replace(/\n/g,"<br>")}
-</p>
-`;
-
-document.getElementById("preview").innerHTML = html;
-document.getElementById("preview").classList.remove("hidden");
+resultado.innerHTML = `<p>${t.replace(/\n/g,"<br>")}</p>`;
+resultado.classList.remove("hidden");
 }
 
-// EDITAR
-function editar(){
-editor.value = texto;
-editor.classList.remove("hidden");
-}
+async function cargarHistorial(){
 
-function guardar(){
-textoFinal = editor.value;
-mostrar(textoFinal);
+const res = await fetch(URL+"/historial");
+const data = await res.json();
+
+historial.innerHTML = data.map(c=>
+`<div class="card mt-2">
+<b>${c.estudiante}</b><br>${c.fecha}
+</div>`
+).join("");
+
 }
 
 </script>
