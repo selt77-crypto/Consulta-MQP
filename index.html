@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Institucional de Convivencia</title>
+<title>Convivencia Escolar Institucional</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -17,36 +17,28 @@ background-size:cover;
 color:white;
 }
 
-/* LOGIN */
-.login{
-max-width:400px;
-margin:100px auto;
-background:white;
-color:black;
-padding:30px;
-border-radius:12px;
-text-align:center;
-}
-
 .container{
 max-width:900px;
 margin:auto;
 background:white;
 color:black;
 padding:30px;
-margin-top:30px;
+margin-top:40px;
 border-radius:15px;
-display:none;
+text-align:center;
 }
 
 .logo{
 width:90px;
+margin-bottom:10px;
 }
 
 input,textarea,select{
 width:100%;
 padding:10px;
 margin:8px 0;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
@@ -54,47 +46,42 @@ background:#f1c40f;
 padding:10px;
 border:none;
 border-radius:8px;
+margin:5px;
 cursor:pointer;
+font-weight:bold;
 }
 
 #resultado,#citacion{
-background:#f4f4f4;
+background:#f9f9f9;
 padding:20px;
-margin-top:15px;
+margin-top:20px;
 white-space:pre-wrap;
+border-left:6px solid #1e3a8a;
+text-align:left;
+font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🔐 LOGIN -->
-<div class="login" id="loginBox">
-<h2>Ingreso al sistema</h2>
-
-<input id="user" placeholder="Usuario">
-<input id="pass" type="password" placeholder="Contraseña">
-
-<button onclick="login()">Ingresar</button>
-
-<p id="error" style="color:red;"></p>
-</div>
-
-<!-- 🏫 SISTEMA -->
-<div class="container" id="app">
+<div class="container">
 
 <img src="escudo.png" class="logo">
 
-<h2>Convivencia Escolar</h2>
-<p id="rol"></p>
+<h2>INSTITUCIÓN EDUCATIVA<br>GESTIÓN DE CONVIVENCIA ESCOLAR</h2>
 
-<input id="nombre" placeholder="Nombre estudiante">
+<input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
 <option>Pre-escolar</option><option>1°</option><option>2°</option>
 <option>3°</option><option>4°</option><option>5°</option>
-<option>6°1</option><option>7°1</option><option>8°1</option>
-<option>9°1</option><option>10°1</option><option>11°1</option>
+<option>6°1</option><option>6°2</option>
+<option>7°1</option><option>7°2</option>
+<option>8°1</option><option>8°2</option>
+<option>9°1</option><option>9°2</option><option>9°3</option>
+<option>10°1</option><option>10°2</option>
+<option>11°1</option><option>11°2</option>
 </select>
 
 <textarea id="caso" placeholder="Describa el caso"></textarea>
@@ -108,6 +95,7 @@ white-space:pre-wrap;
 <button onclick="analizar()">Analizar</button>
 <button onclick="generarCitacion()">Citación</button>
 <button onclick="pdfActa()">PDF Acta</button>
+<button onclick="pdfCitacion()">PDF Citación</button>
 
 <div id="resultado"></div>
 <div id="citacion"></div>
@@ -118,67 +106,82 @@ white-space:pre-wrap;
 
 const { jsPDF } = window.jspdf;
 
-// 🔐 USUARIOS
-const usuarios={
-"docente":"1234",
-"coordinador":"1234",
-"rector":"1234"
-};
-
-let rolActual="";
-
-// 🔐 LOGIN
-function login(){
-
-let u=document.getElementById("user").value;
-let p=document.getElementById("pass").value;
-
-if(usuarios[u] && usuarios[u]===p){
-
-rolActual=u;
-
-loginBox.style.display="none";
-app.style.display="block";
-
-rol.innerText="Rol: "+u;
-
-}else{
-error.innerText="Usuario o contraseña incorrectos";
-}
-}
-
-// 🧠 ANALIZAR
+// 🧠 MOTOR EXPERTO CORRECTO
 function analizar(){
 
 let nombre=val("nombre");
 let grado=val("grado");
-let caso=val("caso").toLowerCase();
+let casoOriginal=val("caso");
+let caso=casoOriginal.toLowerCase();
 
-let tipo="Tipo I";
-
-if(/golpe|agredir/.test(caso)){
-tipo="Tipo III";
-}
-else if(/groser|irrespeto/.test(caso)){
-tipo="Tipo II";
+if(!nombre||!caso){
+alert("Complete todos los campos");
+return;
 }
 
+let tipo, analisis, ruta, medidas, citacion;
+
+if(/arma|droga|lesión|grave|policía/.test(caso)){
+tipo="TIPO III – SITUACIÓN GRAVE";
+analisis="Se evidencia una conducta que afecta gravemente la integridad física o la convivencia escolar.";
+ruta="- Activación del Comité de Convivencia\n- Remisión a entidades externas";
+medidas="- Citación inmediata\n- Registro disciplinario\n- Aplicación de sanciones";
+citacion="OBLIGATORIA";
+}
+else if(/golpe|agredir|groser|irrespeto|reiter/.test(caso)){
+tipo="TIPO II – AFECTA LA CONVIVENCIA";
+analisis="Conducta reiterada que afecta el respeto y el ambiente escolar.";
+ruta="- Registro en observador\n- Seguimiento por coordinación";
+medidas="- Compromiso pedagógico\n- Actividades formativas\n- Seguimiento";
+citacion="RECOMENDADA";
+}
+else{
+tipo="TIPO I – SITUACIÓN LEVE";
+analisis="Conducta ocasional que puede corregirse pedagógicamente.";
+ruta="- Manejo en aula\n- Seguimiento docente";
+medidas="- Llamado de atención\n- Orientación formativa";
+citacion="NO NECESARIA";
+}
+
+// 📄 ACTA COMPLETA
 let texto=`
-ACTA DE CONVIVENCIA
+ACTA DE CONVIVENCIA ESCOLAR
 
 Fecha: ${new Date().toLocaleDateString()}
 Hora: ${new Date().toLocaleTimeString()}
 
-Usuario: ${rolActual}
-
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Descripción:
-${caso}
+DESCRIPCIÓN DEL CASO:
+${casoOriginal}
 
-Clasificación:
+CLASIFICACIÓN:
 ${tipo}
+
+ANÁLISIS PEDAGÓGICO:
+${analisis}
+
+RUTA DE ATENCIÓN:
+${ruta}
+
+MEDIDAS PEDAGÓGICAS:
+${medidas}
+
+DECISIÓN SOBRE CITACIÓN:
+${citacion}
+
+FUNDAMENTO LEGAL:
+Ley 1620 de 2013
+Decreto 1965 de 2013
+
+FIRMAS:
+
+Docente: ________________________________
+
+Coordinación: ___________________________
+
+Rectoría: _______________________________
 `;
 
 resultado.innerText=texto;
@@ -189,11 +192,17 @@ function generarCitacion(){
 
 let nombre=val("nombre");
 let grado=val("grado");
+let caso=val("caso");
 let fecha=val("fecha");
 let hora=val("hora");
 
+if(!fecha||!hora){
+alert("Ingrese fecha y hora");
+return;
+}
+
 let texto=`
-CITACIÓN
+CITACIÓN A PADRES DE FAMILIA
 
 Fecha: ${fecha}
 Hora: ${hora}
@@ -201,23 +210,59 @@ Hora: ${hora}
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Atentamente
-${rolActual}
+Motivo:
+${caso}
+
+Se solicita su presencia en la institución para atender la situación presentada.
+
+Atentamente,
+
+Docente: ________________________________
+
+Coordinación: ___________________________
+
+Rectoría: _______________________________
 `;
 
 citacion.innerText=texto;
 }
 
-// 📄 PDF
-function pdfActa(){
+// 🏫 PDF BIEN FORMATEADO
+function crearPDF(texto,nombre){
 
 let doc=new jsPDF();
-doc.text(resultado.innerText,10,10);
-doc.save("acta.pdf");
+
+doc.addImage("escudo.png","PNG",90,10,25,25);
+
+doc.setFont("Times","Normal");
+doc.setFontSize(11);
+
+let lineas=doc.splitTextToSize(texto,170);
+let y=50;
+
+lineas.forEach(linea=>{
+if(y>270){
+doc.addPage();
+doc.addImage("escudo.png","PNG",90,10,25,25);
+y=50;
+}
+doc.text(linea,20,y);
+y+=7;
+});
+
+doc.save(nombre+".pdf");
+}
+
+function pdfActa(){
+crearPDF(resultado.innerText,"ACTA_CONVIVENCIA");
+}
+
+function pdfCitacion(){
+crearPDF(citacion.innerText,"CITACION");
 }
 
 function val(id){
-return document.getElementById(id).value;
+return document.getElementById(id).value.trim();
 }
 
 </script>
