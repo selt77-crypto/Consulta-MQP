@@ -2,119 +2,71 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Plataforma Institucional</title>
+<title>Convivencia Escolar PRO</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-
 body{
 margin:0;
 font-family:'Segoe UI';
-background:
-linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
-url('fondo_estudiantes.jpg'); /* 🔥 tu imagen del repo */
+background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url('fondo_estudiantes.jpg');
 background-size:cover;
 color:white;
 }
-
-/* LOGIN */
-#login{
-display:flex;
-height:100vh;
-justify-content:center;
-align-items:center;
-}
-
-.login-box{
-background:white;
-color:black;
-padding:30px;
-border-radius:15px;
-width:300px;
-text-align:center;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-}
-
-button{
-background:gold;
-padding:10px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-margin:5px;
-}
-
-/* APP */
-#app{
-display:none;
-padding:20px;
-}
-
 .container{
 max-width:900px;
 margin:auto;
 background:white;
 color:black;
 padding:30px;
-border-radius:20px;
+margin-top:40px;
+border-radius:15px;
 }
-
-.botones{
-text-align:center;
+input,textarea,select{
+width:100%;
+padding:10px;
+margin:8px 0;
 }
-
+button{
+background:gold;
+padding:10px;
+border:none;
+border-radius:8px;
+margin:5px;
+cursor:pointer;
+}
 #resultado{
-margin-top:20px;
+white-space:pre-wrap;
 background:#f4f4f4;
 padding:20px;
-white-space:pre-wrap;
+margin-top:20px;
 }
 </style>
-
 </head>
 
 <body>
 
-<div id="login">
-<div class="login-box">
-<h3>Ingreso</h3>
-<input id="user">
-<input id="pass" type="password">
-<button onclick="login()">Entrar</button>
-</div>
-</div>
-
-<div id="app">
 <div class="container">
 
-<h2>Panel de Convivencia</h2>
+<h2>Asesor de Convivencia Escolar</h2>
 
-<input id="nombre" placeholder="Nombre estudiante">
-
+<input id="nombre" placeholder="Nombre">
 <select id="grado">
+<option>Pre-escolar</option><option>1°</option><option>2°</option>
+<option>3°</option><option>4°</option><option>5°</option>
 <option>6°1</option><option>7°1</option><option>8°1</option>
 <option>9°1</option><option>10°1</option><option>11°1</option>
 </select>
 
-<textarea id="caso"></textarea>
+<textarea id="caso" placeholder="Describa el caso"></textarea>
 
-<div class="botones">
 <button onclick="analizar()">Analizar</button>
-<button onclick="historial()">Historial</button>
-<button onclick="buscar()">Buscar</button>
-<button onclick="reporteCurso()">Reporte Curso</button>
+<button onclick="generarCitacion()">Citación</button>
 <button onclick="pdf()">PDF</button>
-</div>
 
 <div id="resultado"></div>
 
-</div>
 </div>
 
 <script>
@@ -122,18 +74,18 @@ white-space:pre-wrap;
 const { jsPDF } = window.jspdf;
 const URL="https://consulta-backend-eg98.onrender.com";
 
-function login(){
-if(user.value==="docente"&&pass.value==="123"){
-login.style.display="none";
-app.style.display="block";
-}else alert("Error");
-}
-
 async function analizar(){
 
-let nombre=nombre.value;
-let grado=grado.value;
-let caso=caso.value;
+try{
+
+let nombre=document.getElementById("nombre").value.trim();
+let grado=document.getElementById("grado").value;
+let caso=document.getElementById("caso").value.trim();
+
+if(!nombre||!caso){
+alert("Complete todos los campos");
+return;
+}
 
 let res=await fetch(URL+"/analizar",{
 method:"POST",
@@ -143,30 +95,19 @@ body:JSON.stringify({nombre,grado,caso})
 
 let data=await res.json();
 
-resultado.innerText=`${nombre} - ${grado}\n${data.resultado}`;
+if(data.error){
+alert(data.error);
+return;
 }
 
-async function historial(){
-let r=await fetch(URL+"/casos");
-let d=await r.json();
-resultado.innerText=JSON.stringify(d,null,2);
+resultado.innerText=data.resultado;
+
+}catch(e){
+alert("Error de conexión con el servidor");
+}
 }
 
-async function buscar(){
-let n=prompt("Nombre");
-let r=await fetch(URL+"/buscar/"+n);
-let d=await r.json();
-resultado.innerText=JSON.stringify(d,null,2);
-}
-
-async function reporteCurso(){
-let g=grado.value;
-let r=await fetch(URL+"/curso/"+g);
-let d=await r.json();
-resultado.innerText=JSON.stringify(d,null,2);
-}
-
-// PDF COMPLETO
+// 📄 PDF SIN CORTES
 function pdf(){
 
 let doc=new jsPDF();
@@ -174,15 +115,55 @@ let texto=resultado.innerText;
 let lineas=doc.splitTextToSize(texto,180);
 
 let y=30;
-let pageHeight=doc.internal.pageSize.height;
+let pagina=1;
+
+function encabezado(){
+doc.setFontSize(10);
+doc.text("INSTITUCIÓN EDUCATIVA",10,10);
+}
+
+function pie(){
+doc.text("Página "+pagina,180,290);
+}
+
+encabezado();
 
 lineas.forEach(linea=>{
-if(y>270){doc.addPage();y=20;}
+if(y>270){
+pie();
+doc.addPage();
+pagina++;
+encabezado();
+y=30;
+}
 doc.text(linea,10,y);
 y+=7;
 });
 
-doc.save("reporte.pdf");
+pie();
+
+doc.save("acta.pdf");
+}
+
+// 📩 CITACIÓN AUTOMÁTICA
+function generarCitacion(){
+
+let texto=`
+CITACIÓN A ACUDIENTES/PADRES DE FAMILIA
+
+Estudiante: ${nombre.value}
+
+Motivo:
+${caso.value}
+
+Se solicita su حضور para atención del caso.
+
+Firma Docente: ____________
+Firma Coordinación: ____________
+Firma Rector (si aplica): ______________
+`;
+
+resultado.innerText=texto;
 }
 
 </script>
