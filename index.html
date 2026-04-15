@@ -55,13 +55,8 @@ font-weight:bold;
 transition:0.2s;
 }
 
-button:hover{
-background:#eab308;
-}
-
-button:active{
-transform:scale(0.95);
-}
+button:hover{ background:#eab308; }
+button:active{ transform:scale(0.95); }
 
 /* APP */
 #app{
@@ -188,26 +183,37 @@ white-space:pre-wrap;
 const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
-const usuarios = {
-docente:"123",
-coordinador:"123",
-rector:"123"
-};
-
+// 🔐 LOGIN CORREGIDO
 function login(){
 
-let u=user.value.trim().toLowerCase();
-let p=pass.value.trim();
+let u = document.getElementById("user").value.trim().toLowerCase();
+let p = document.getElementById("pass").value.trim();
 
-if(usuarios[u] && usuarios[u]===p){
-login.style.display="none";
-app.style.display="block";
-rol.innerText="Rol: "+u;
-}else{
-alert("Datos incorrectos");
-}
+if(u === "docente" && p === "123"){
+entrar("Docente");
+return;
 }
 
+if(u === "coordinador" && p === "123"){
+entrar("Coordinador");
+return;
+}
+
+if(u === "rector" && p === "123"){
+entrar("Rector");
+return;
+}
+
+alert("Usuario o contraseña incorrectos");
+}
+
+function entrar(rolUsuario){
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+document.getElementById("rol").innerText="Rol: "+rolUsuario;
+}
+
+// ANALIZAR
 async function analizar(){
 
 let nombre = document.getElementById("nombre").value;
@@ -268,7 +274,7 @@ let doc=new jsPDF();
 doc.addImage("escudo.png","PNG",85,10,30,30);
 
 let texto = `
-CITACIÓN A PADRES
+CITACIÓN A PADRES DE FAMILIA
 
 Estudiante: ${nombre.value}
 
@@ -280,7 +286,7 @@ Hora: ${hora.value}
 
 Firma Docente: ____________________
 Firma Coordinación: ____________________
-Firma Rector(si aplica): ___________________
+Firma Rector (si aplica): ___________________
 `;
 
 let lineas = doc.splitTextToSize(texto,180);
