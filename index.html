@@ -4,35 +4,44 @@
 <meta charset="UTF-8">
 <title>Asesor de Convivencia Escolar</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 body{
-    font-family: Arial;
-    background:#0f172a;
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url('fondo_estudiantes.jpg');
+    background-size:cover;
     color:white;
-    text-align:center;
 }
 
 .container{
+    max-width:900px;
+    margin:40px auto;
     background:white;
     color:black;
-    max-width:700px;
-    margin:auto;
-    padding:20px;
-    border-radius:10px;
+    padding:30px;
+    border-radius:20px;
 }
+
+h1{text-align:center;}
 
 input, textarea, select{
     width:100%;
+    padding:12px;
     margin:10px 0;
-    padding:10px;
+    border-radius:8px;
 }
 
 button{
-    background:gold;
-    padding:10px;
+    background:#f4c400;
     border:none;
+    padding:12px;
+    margin:5px;
+    border-radius:8px;
     cursor:pointer;
-    border-radius:6px;
+    font-weight:bold;
 }
 
 button:active{
@@ -41,47 +50,40 @@ button:active{
 
 #resultado{
     margin-top:20px;
-    white-space:pre-wrap;
+    padding:20px;
     background:#f4f4f4;
-    padding:15px;
+    border-radius:10px;
+    white-space:pre-wrap;
+}
+
+.botones{
+    text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Asesor de Convivencia Escolar</h1>
-
 <div class="container">
+
+<h1>Asesor de Convivencia Escolar</h1>
 
 <input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
 <option value="">Seleccione grado</option>
-<option>Pre-escolar</option>
-<option>1°</option>
-<option>2°</option>
-<option>3°</option>
-<option>4°</option>
-<option>5°</option>
-<option>6°1</option>
-<option>6°2</option>
-<option>7°1</option>
-<option>7°2</option>
-<option>8°1</option>
-<option>8°2</option>
-<option>9°1</option>
-<option>9°2</option>
-<option>9°3</option>
-<option>10°1</option>
-<option>10°2</option>
-<option>11°1</option>
-<option>11°2</option>
+<option>6°1</option><option>7°1</option>
+<option>8°1</option><option>9°1</option>
+<option>10°1</option><option>11°1</option>
 </select>
 
-<textarea id="caso" placeholder="Describa el caso de convivencia"></textarea>
+<textarea id="caso" placeholder="Describa el caso"></textarea>
 
+<div class="botones">
 <button onclick="analizar()">Analizar</button>
+<button onclick="descargarPDF()">Descargar PDF</button>
+<button onclick="citacion()">Citación</button>
+</div>
 
 <div id="resultado"></div>
 
@@ -89,6 +91,7 @@ button:active{
 
 <script>
 
+const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
 async function analizar(){
@@ -102,11 +105,9 @@ alert("Complete todos los campos");
 return;
 }
 
-document.getElementById("resultado").innerText = "Analizando...";
+resultado.innerText = "Analizando...";
 
-try{
-
-let res = await fetch(URL + "/analizar",{
+let res = await fetch(URL+"/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({nombre, grado, caso})
@@ -114,19 +115,78 @@ body:JSON.stringify({nombre, grado, caso})
 
 let data = await res.json();
 
-document.getElementById("resultado").innerText =
+resultado.innerText =
 `ACTA DE CONVIVENCIA
+
+INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA
 
 Estudiante: ${nombre}
 Grado: ${grado}
 
-${data.resultado}`;
+Descripción del caso:
+${caso}
 
-}catch{
-document.getElementById("resultado").innerText =
-"Error de conexión con el servidor. Intente nuevamente.";
+${data.resultado}
+
+Firma Docente: ____________________
+
+Firma Coordinador: ____________________
+
+Firma Psicoorientador: ____________________
+
+Firma Rector: ____________________
+`;
 }
 
+// 📄 PDF PROFESIONAL
+function descargarPDF(){
+
+let doc = new jsPDF();
+
+doc.setFontSize(16);
+doc.text("ACTA DE CONVIVENCIA", 60, 20);
+
+doc.setFontSize(10);
+doc.text("Institución Educativa Manuel Quintero Penilla", 40, 30);
+
+// Marca de agua
+doc.setTextColor(200,200,200);
+doc.text("M.Q.P", 80, 150, {angle:45});
+
+doc.setTextColor(0,0,0);
+doc.setFontSize(11);
+
+let texto = resultado.innerText;
+doc.text(texto, 10, 50);
+
+let nombre = document.getElementById("nombre").value;
+let grado = document.getElementById("grado").value;
+
+doc.save(`acta_${nombre}_${grado}.pdf`);
+}
+
+// 📩 CITACIÓN
+function citacion(){
+
+let doc = new jsPDF();
+
+doc.setFontSize(14);
+doc.text("CITACIÓN A PADRES DE FAMILIA", 40, 20);
+
+doc.setFontSize(11);
+
+doc.text("Se cita al acudiente del estudiante:", 20, 40);
+doc.text(document.getElementById("nombre").value, 20, 50);
+
+doc.text("Motivo:", 20, 70);
+doc.text(document.getElementById("caso").value, 20, 80);
+
+doc.text("Fecha: ____________________", 20, 110);
+
+doc.text("Firma Docente: ____________________", 20, 140);
+doc.text("Firma Coordinación: ____________________", 20, 160);
+
+doc.save("citacion.pdf");
 }
 
 </script>
