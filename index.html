@@ -2,50 +2,40 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Asesor de Convivencia Escolar</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Sistema de Convivencia</title>
 
 <style>
 body{
-    margin:0;
-    font-family:'Segoe UI', sans-serif;
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-    url('fondo_estudiantes.jpg');
-    background-size:cover;
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+    text-align:center;
 }
 
 .container{
-    max-width:900px;
-    margin:40px auto;
     background:white;
-    padding:30px;
-    border-radius:20px;
+    color:black;
+    max-width:600px;
+    margin:auto;
+    padding:20px;
+    border-radius:10px;
 }
-
-h1{text-align:center;}
 
 input, textarea, select{
     width:100%;
-    padding:12px;
     margin:10px 0;
-    border-radius:8px;
+    padding:10px;
 }
 
 button{
-    background:#f4c400;
+    background:gold;
+    padding:10px;
     border:none;
-    padding:12px;
-    margin:5px;
-    border-radius:8px;
     cursor:pointer;
 }
 
 #resultado{
     margin-top:20px;
-    padding:20px;
-    background:#f4f4f4;
-    border-radius:10px;
     white-space:pre-wrap;
 }
 </style>
@@ -53,32 +43,25 @@ button{
 
 <body>
 
-<div class="container">
+<h1>Sistema de Convivencia Escolar</h1>
 
-<h1>Asesor de Convivencia Escolar</h1>
+<div class="container">
 
 <input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
-<option>Seleccione grado</option>
-<option>Pre-escolar</option>
-<option>1°</option><option>2°</option><option>3°</option>
-<option>4°</option><option>5°</option>
-<option>6°1</option><option>6°2</option>
-<option>7°1</option><option>7°2</option>
-<option>8°1</option><option>8°2</option>
-<option>9°1</option><option>9°2</option><option>9°3</option>
-<option>10°1</option><option>10°2</option>
-<option>11°1</option><option>11°2</option>
+<option value="">Seleccione grado</option>
+<option>6°1</option>
+<option>7°1</option>
+<option>8°1</option>
+<option>9°1</option>
+<option>10°1</option>
+<option>11°1</option>
 </select>
 
-<textarea id="caso" rows="5" placeholder="Describa el caso"></textarea>
+<textarea id="caso" placeholder="Describa el caso"></textarea>
 
 <button onclick="analizar()">Analizar</button>
-<button onclick="pdf()">PDF</button>
-<button onclick="citacion()">Citación</button>
-<button onclick="historial()">Historial</button>
-<button onclick="buscar()">Buscar</button>
 
 <div id="resultado"></div>
 
@@ -86,15 +69,24 @@ button{
 
 <script>
 
-const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
 async function analizar(){
-let nombre = nombreInput.value;
-let grado = gradoInput.value;
-let caso = casoInput.value;
 
-let res = await fetch(URL+"/analizar",{
+let nombre = document.getElementById("nombre").value;
+let grado = document.getElementById("grado").value;
+let caso = document.getElementById("caso").value;
+
+if(!nombre || !grado || !caso){
+alert("Complete todos los campos");
+return;
+}
+
+document.getElementById("resultado").innerText = "Analizando...";
+
+try{
+
+let res = await fetch(URL + "/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({nombre, grado, caso})
@@ -102,62 +94,18 @@ body:JSON.stringify({nombre, grado, caso})
 
 let data = await res.json();
 
-resultado.innerText = `
-ACTA DE CONVIVENCIA ESCOLAR
-(Ley 1620 de 2013)
+document.getElementById("resultado").innerText =
+`ACTA DE CONVIVENCIA
 
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Descripción:
-${caso}
+${data.resultado}`;
 
-${data.resultado}
-`;
+}catch{
+document.getElementById("resultado").innerText = "Error de conexión";
 }
 
-// PDF
-function pdf(){
-let doc = new jsPDF();
-doc.text(resultado.innerText,10,10);
-doc.save("acta.pdf");
-}
-
-// CITACION
-function citacion(){
-let doc = new jsPDF();
-doc.text("CITACIÓN A PADRES DE FAMILIA",20,20);
-doc.text("Se solicita presencia del acudiente.",20,40);
-doc.save("citacion.pdf");
-}
-
-// HISTORIAL
-async function historial(){
-let res = await fetch(URL+"/casos");
-let data = await res.json();
-
-let texto="";
-data.forEach(c=>{
-texto += `${c.nombre} - ${c.tipo}\n`;
-});
-
-resultado.innerText = texto;
-}
-
-// BUSCAR
-async function buscar(){
-let nombre = prompt("Nombre estudiante");
-let res = await fetch(URL+"/casos");
-let data = await res.json();
-
-let filtrado = data.filter(c => c.nombre.includes(nombre));
-
-let texto="";
-filtrado.forEach(c=>{
-texto += `${c.nombre} - ${c.tipo}\n`;
-});
-
-resultado.innerText = texto;
 }
 
 </script>
