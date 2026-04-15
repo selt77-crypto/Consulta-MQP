@@ -4,31 +4,28 @@
 <meta charset="UTF-8">
 <title>Asesor de Convivencia Escolar</title>
 
-<style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<style>
 body{
     margin:0;
-    font-family: 'Segoe UI', sans-serif;
+    font-family:'Segoe UI', sans-serif;
     background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
     url('fondo_estudiantes.jpg');
-    background-size: cover;
-    color:#fff;
+    background-size:cover;
 }
 
 /* CONTENEDOR */
 .container{
-    max-width: 900px;
-    margin: 40px auto;
-    background: rgba(255,255,255,0.95);
+    max-width:900px;
+    margin:40px auto;
+    background:white;
     padding:30px;
     border-radius:20px;
-    color:#000;
 }
 
 /* TITULO */
-h1{
-    text-align:center;
-}
+h1{text-align:center;}
 
 /* INPUTS */
 input, textarea, select{
@@ -37,60 +34,34 @@ input, textarea, select{
     margin:10px 0;
     border-radius:8px;
     border:1px solid #ccc;
-    font-size:16px;
 }
 
 /* BOTONES */
 button{
     background:#f4c400;
     border:none;
-    padding:12px 20px;
-    font-size:16px;
-    margin:10px 5px;
+    padding:12px 18px;
     border-radius:8px;
     cursor:pointer;
-    transition: all 0.2s;
+    margin:5px;
+    transition:0.2s;
 }
 
-button:hover{
-    background:#ffd633;
-}
-
-button:active{
-    transform: scale(0.92);
-}
+button:hover{background:#ffd633;}
+button:active{transform:scale(0.9);}
 
 /* RESULTADO */
 #resultado{
-    background:#fff;
-    padding:20px;
     margin-top:20px;
+    padding:20px;
+    background:#f4f4f4;
     border-radius:10px;
-    white-space: pre-wrap;
+    white-space:pre-wrap;
 }
 
-/* BARRA PROGRESO */
-#barra{
-    width:100%;
-    height:8px;
-    background:#ddd;
-    border-radius:5px;
-    margin-top:10px;
-    overflow:hidden;
-}
-
-#progreso{
-    height:100%;
-    width:0%;
-    background:#3b82f6;
-    transition: width 0.5s;
-}
-
-/* BOTONES EXTRA */
-.botones{
-    margin-top:15px;
-}
-
+/* PROGRESO */
+#barra{height:8px;background:#ddd;border-radius:5px;}
+#progreso{height:100%;width:0%;background:#3b82f6;}
 </style>
 </head>
 
@@ -100,36 +71,19 @@ button:active{
 
 <h1>Asesor de Convivencia Escolar</h1>
 
-<p><b>Instrucciones:</b><br>
-1. Ingrese el nombre<br>
-2. Seleccione el grado<br>
-3. Describa el caso<br>
-4. Presione analizar
-</p>
-
 <input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
 <option value="">Seleccione el grado</option>
 <option>Pre-escolar</option>
-<option>1°</option>
-<option>2°</option>
-<option>3°</option>
-<option>4°</option>
-<option>5°</option>
-<option>6°1</option>
-<option>6°2</option>
-<option>7°1</option>
-<option>7°2</option>
-<option>8°1</option>
-<option>8°2</option>
-<option>9°1</option>
-<option>9°2</option>
-<option>9°3</option>
-<option>10°1</option>
-<option>10°2</option>
-<option>11°1</option>
-<option>11°2</option>
+<option>1°</option><option>2°</option><option>3°</option>
+<option>4°</option><option>5°</option>
+<option>6°1</option><option>6°2</option>
+<option>7°1</option><option>7°2</option>
+<option>8°1</option><option>8°2</option>
+<option>9°1</option><option>9°2</option><option>9°3</option>
+<option>10°1</option><option>10°2</option>
+<option>11°1</option><option>11°2</option>
 </select>
 
 <textarea id="caso" rows="5" placeholder="Describa el caso"></textarea>
@@ -140,50 +94,52 @@ button:active{
 
 <div id="resultado"></div>
 
-<div class="botones">
+<!-- BOTONES -->
+<div>
 <button onclick="editar()">Editar</button>
 <button onclick="guardar()">Guardar</button>
-<button onclick="descargarPDF()">Descargar PDF</button>
-<button onclick="citar()">Citación</button>
+<button onclick="pdf()">PDF</button>
+<button onclick="citacion()">Citación</button>
+<button onclick="historial()">Historial</button>
 </div>
 
 </div>
 
 <script>
 
+const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
 async function analizar(){
 
-    let nombre = document.getElementById("nombre").value;
-    let grado = document.getElementById("grado").value;
-    let caso = document.getElementById("caso").value;
+let nombre = document.getElementById("nombre").value;
+let grado = document.getElementById("grado").value;
+let caso = document.getElementById("caso").value;
 
-    if(!nombre || !grado || !caso){
-        alert("Completa todos los campos");
-        return;
-    }
+if(!nombre || !grado || !caso){
+alert("Completa todos los campos");
+return;
+}
 
-    // PROGRESO
-    document.getElementById("progreso").style.width="30%";
-    document.getElementById("resultado").innerText="⏳ Analizando caso...";
+progreso.style.width="40%";
+resultado.innerText="Analizando...";
 
-    try{
+try{
 
-        const res = await fetch(URL+"/analizar",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({nombre, grado, caso})
-        });
+let res = await fetch(URL+"/analizar",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({nombre, grado, caso})
+});
 
-        document.getElementById("progreso").style.width="70%";
+progreso.style.width="80%";
 
-        const data = await res.json();
+let data = await res.json();
 
-        document.getElementById("progreso").style.width="100%";
+progreso.style.width="100%";
 
-        document.getElementById("resultado").innerText = `
-ACTA DE CONVIVENCIA
+resultado.innerText =
+`ACTA DE CONVIVENCIA
 
 Institución Educativa Técnico Empresarial Manuel Quintero Penilla
 
@@ -193,35 +149,56 @@ Grado: ${grado}
 Descripción del caso:
 ${caso}
 
-${data.resultado}
-        `;
+${data.resultado}`;
 
-    }catch(e){
-        document.getElementById("resultado").innerText="⚠️ Servidor iniciando...";
-    }
+}catch{
+resultado.innerText="Servidor iniciando...";
 }
 
-/* BOTONES */
+}
+
+/* FUNCIONES */
 
 function editar(){
-    document.getElementById("resultado").contentEditable = true;
-    alert("Ahora puedes editar el texto");
+resultado.contentEditable = true;
+alert("Ahora puedes editar el acta");
 }
 
 function guardar(){
-    alert("Documento guardado (simulado)");
+localStorage.setItem("acta", resultado.innerText);
+alert("Acta guardada");
 }
 
-function descargarPDF(){
-    let contenido = document.getElementById("resultado").innerText;
-
-    let ventana = window.open('', '', 'height=600,width=800');
-    ventana.document.write('<pre>'+contenido+'</pre>');
-    ventana.print();
+function pdf(){
+let doc = new jsPDF();
+doc.text(resultado.innerText,10,10);
+doc.save("acta.pdf");
 }
 
-function citar(){
-    alert("Citación generada para acudiente");
+function citacion(){
+let doc = new jsPDF();
+doc.text("CITACIÓN A ACUDIENTE",20,20);
+doc.text("Se solicita presencia del acudiente.",20,40);
+doc.save("citacion.pdf");
+}
+
+async function historial(){
+let res = await fetch(URL+"/casos");
+let data = await res.json();
+
+let texto="HISTORIAL\n\n";
+
+data.reverse().forEach(c=>{
+texto += `Nombre: ${c.nombre}
+Grado: ${c.grado}
+Tipo: ${c.tipo}
+Fecha: ${c.fecha}
+
+------------------
+`;
+});
+
+resultado.innerText = texto;
 }
 
 </script>
