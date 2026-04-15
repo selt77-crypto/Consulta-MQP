@@ -5,70 +5,110 @@
 <title>Asesor de Convivencia Escolar</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: white;
-    text-align: center;
-    padding: 20px;
+
+body{
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url('fondo_estudiantes.jpg');
+    background-size: cover;
+    color:#fff;
 }
 
-.container {
-    background: white;
-    color: black;
+/* CONTENEDOR */
+.container{
     max-width: 900px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 10px;
+    margin: 40px auto;
+    background: rgba(255,255,255,0.95);
+    padding:30px;
+    border-radius:20px;
+    color:#000;
 }
 
-input, textarea, select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 16px;
+/* TITULO */
+h1{
+    text-align:center;
 }
 
-button {
-    background: gold;
-    border: none;
-    padding: 12px 20px;
-    font-size: 18px;
-    cursor: pointer;
+/* INPUTS */
+input, textarea, select{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:16px;
 }
 
-button:active {
-    transform: scale(0.95);
+/* BOTONES */
+button{
+    background:#f4c400;
+    border:none;
+    padding:12px 20px;
+    font-size:16px;
+    margin:10px 5px;
+    border-radius:8px;
+    cursor:pointer;
+    transition: all 0.2s;
 }
 
-#resultado {
-    margin-top: 20px;
+button:hover{
+    background:#ffd633;
+}
+
+button:active{
+    transform: scale(0.92);
+}
+
+/* RESULTADO */
+#resultado{
+    background:#fff;
+    padding:20px;
+    margin-top:20px;
+    border-radius:10px;
     white-space: pre-wrap;
-    text-align: left;
-    background: #f4f4f4;
-    padding: 15px;
 }
-</style>
 
+/* BARRA PROGRESO */
+#barra{
+    width:100%;
+    height:8px;
+    background:#ddd;
+    border-radius:5px;
+    margin-top:10px;
+    overflow:hidden;
+}
+
+#progreso{
+    height:100%;
+    width:0%;
+    background:#3b82f6;
+    transition: width 0.5s;
+}
+
+/* BOTONES EXTRA */
+.botones{
+    margin-top:15px;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>Asesor de Convivencia Escolar</h2>
+<h1>Asesor de Convivencia Escolar</h1>
 
 <p><b>Instrucciones:</b><br>
-1. Ingrese el nombre del estudiante<br>
+1. Ingrese el nombre<br>
 2. Seleccione el grado<br>
 3. Describa el caso<br>
 4. Presione analizar
 </p>
 
-<!-- Nombre -->
-<input type="text" id="nombre" placeholder="Nombre del estudiante">
+<input id="nombre" placeholder="Nombre del estudiante">
 
-<!-- NUEVO CAMPO GRADO -->
 <select id="grado">
 <option value="">Seleccione el grado</option>
 <option>Pre-escolar</option>
@@ -92,12 +132,20 @@ button:active {
 <option>11°2</option>
 </select>
 
-<!-- Caso -->
-<textarea id="caso" rows="5" placeholder="Describa el caso de convivencia"></textarea>
+<textarea id="caso" rows="5" placeholder="Describa el caso"></textarea>
 
-<button onclick="analizarCaso()">Analizar</button>
+<button onclick="analizar()">Analizar</button>
+
+<div id="barra"><div id="progreso"></div></div>
 
 <div id="resultado"></div>
+
+<div class="botones">
+<button onclick="editar()">Editar</button>
+<button onclick="guardar()">Guardar</button>
+<button onclick="descargarPDF()">Descargar PDF</button>
+<button onclick="citar()">Citación</button>
+</div>
 
 </div>
 
@@ -105,32 +153,35 @@ button:active {
 
 const URL = "https://consulta-backend-eg98.onrender.com";
 
-async function analizarCaso() {
+async function analizar(){
 
-    const nombre = document.getElementById("nombre").value;
-    const grado = document.getElementById("grado").value;
-    const caso = document.getElementById("caso").value;
+    let nombre = document.getElementById("nombre").value;
+    let grado = document.getElementById("grado").value;
+    let caso = document.getElementById("caso").value;
 
-    if (!nombre || !grado || !caso) {
-        alert("Por favor complete todos los campos");
+    if(!nombre || !grado || !caso){
+        alert("Completa todos los campos");
         return;
     }
 
-    document.getElementById("resultado").innerText = "⏳ Analizando caso...";
+    // PROGRESO
+    document.getElementById("progreso").style.width="30%";
+    document.getElementById("resultado").innerText="⏳ Analizando caso...";
 
-    try {
+    try{
 
-        const res = await fetch(URL + "/analizar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ nombre, grado, caso })
+        const res = await fetch(URL+"/analizar",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({nombre, grado, caso})
         });
+
+        document.getElementById("progreso").style.width="70%";
 
         const data = await res.json();
 
-        // 🔥 ACTA FINAL CON GRADO
+        document.getElementById("progreso").style.width="100%";
+
         document.getElementById("resultado").innerText = `
 ACTA DE CONVIVENCIA
 
@@ -145,10 +196,32 @@ ${caso}
 ${data.resultado}
         `;
 
-    } catch (error) {
-        document.getElementById("resultado").innerText =
-        "⚠️ El servidor está iniciando. Intenta nuevamente en unos segundos.";
+    }catch(e){
+        document.getElementById("resultado").innerText="⚠️ Servidor iniciando...";
     }
+}
+
+/* BOTONES */
+
+function editar(){
+    document.getElementById("resultado").contentEditable = true;
+    alert("Ahora puedes editar el texto");
+}
+
+function guardar(){
+    alert("Documento guardado (simulado)");
+}
+
+function descargarPDF(){
+    let contenido = document.getElementById("resultado").innerText;
+
+    let ventana = window.open('', '', 'height=600,width=800');
+    ventana.document.write('<pre>'+contenido+'</pre>');
+    ventana.print();
+}
+
+function citar(){
+    alert("Citación generada para acudiente");
 }
 
 </script>
