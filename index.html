@@ -15,7 +15,6 @@ body{
     background-size:cover;
 }
 
-/* CONTENEDOR */
 .container{
     max-width:900px;
     margin:40px auto;
@@ -24,33 +23,24 @@ body{
     border-radius:20px;
 }
 
-/* TITULO */
 h1{text-align:center;}
 
-/* INPUTS */
 input, textarea, select{
     width:100%;
     padding:12px;
     margin:10px 0;
     border-radius:8px;
-    border:1px solid #ccc;
 }
 
-/* BOTONES */
 button{
     background:#f4c400;
     border:none;
-    padding:12px 18px;
+    padding:12px;
+    margin:5px;
     border-radius:8px;
     cursor:pointer;
-    margin:5px;
-    transition:0.2s;
 }
 
-button:hover{background:#ffd633;}
-button:active{transform:scale(0.9);}
-
-/* RESULTADO */
 #resultado{
     margin-top:20px;
     padding:20px;
@@ -58,10 +48,6 @@ button:active{transform:scale(0.9);}
     border-radius:10px;
     white-space:pre-wrap;
 }
-
-/* PROGRESO */
-#barra{height:8px;background:#ddd;border-radius:5px;}
-#progreso{height:100%;width:0%;background:#3b82f6;}
 </style>
 </head>
 
@@ -74,7 +60,7 @@ button:active{transform:scale(0.9);}
 <input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
-<option value="">Seleccione el grado</option>
+<option>Seleccione grado</option>
 <option>Pre-escolar</option>
 <option>1°</option><option>2°</option><option>3°</option>
 <option>4°</option><option>5°</option>
@@ -89,19 +75,12 @@ button:active{transform:scale(0.9);}
 <textarea id="caso" rows="5" placeholder="Describa el caso"></textarea>
 
 <button onclick="analizar()">Analizar</button>
-
-<div id="barra"><div id="progreso"></div></div>
-
-<div id="resultado"></div>
-
-<!-- BOTONES -->
-<div>
-<button onclick="editar()">Editar</button>
-<button onclick="guardar()">Guardar</button>
 <button onclick="pdf()">PDF</button>
 <button onclick="citacion()">Citación</button>
 <button onclick="historial()">Historial</button>
-</div>
+<button onclick="buscar()">Buscar</button>
+
+<div id="resultado"></div>
 
 </div>
 
@@ -111,20 +90,9 @@ const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
 async function analizar(){
-
-let nombre = document.getElementById("nombre").value;
-let grado = document.getElementById("grado").value;
-let caso = document.getElementById("caso").value;
-
-if(!nombre || !grado || !caso){
-alert("Completa todos los campos");
-return;
-}
-
-progreso.style.width="40%";
-resultado.innerText="Analizando...";
-
-try{
+let nombre = nombreInput.value;
+let grado = gradoInput.value;
+let caso = casoInput.value;
 
 let res = await fetch(URL+"/analizar",{
 method:"POST",
@@ -132,70 +100,61 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({nombre, grado, caso})
 });
 
-progreso.style.width="80%";
-
 let data = await res.json();
 
-progreso.style.width="100%";
-
-resultado.innerText =
-`ACTA DE CONVIVENCIA
-
-Institución Educativa Técnico Empresarial Manuel Quintero Penilla
+resultado.innerText = `
+ACTA DE CONVIVENCIA ESCOLAR
+(Ley 1620 de 2013)
 
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Descripción del caso:
+Descripción:
 ${caso}
 
-${data.resultado}`;
-
-}catch{
-resultado.innerText="Servidor iniciando...";
+${data.resultado}
+`;
 }
 
-}
-
-/* FUNCIONES */
-
-function editar(){
-resultado.contentEditable = true;
-alert("Ahora puedes editar el acta");
-}
-
-function guardar(){
-localStorage.setItem("acta", resultado.innerText);
-alert("Acta guardada");
-}
-
+// PDF
 function pdf(){
 let doc = new jsPDF();
 doc.text(resultado.innerText,10,10);
 doc.save("acta.pdf");
 }
 
+// CITACION
 function citacion(){
 let doc = new jsPDF();
-doc.text("CITACIÓN A ACUDIENTE",20,20);
+doc.text("CITACIÓN A PADRES DE FAMILIA",20,20);
 doc.text("Se solicita presencia del acudiente.",20,40);
 doc.save("citacion.pdf");
 }
 
+// HISTORIAL
 async function historial(){
 let res = await fetch(URL+"/casos");
 let data = await res.json();
 
-let texto="HISTORIAL\n\n";
+let texto="";
+data.forEach(c=>{
+texto += `${c.nombre} - ${c.tipo}\n`;
+});
 
-data.reverse().forEach(c=>{
-texto += `Nombre: ${c.nombre}
-Grado: ${c.grado}
-Tipo: ${c.tipo}
-Fecha: ${c.fecha}
+resultado.innerText = texto;
+}
 
-------------------
-`;
+// BUSCAR
+async function buscar(){
+let nombre = prompt("Nombre estudiante");
+let res = await fetch(URL+"/casos");
+let data = await res.json();
+
+let filtrado = data.filter(c => c.nombre.includes(nombre));
+
+let texto="";
+filtrado.forEach(c=>{
+texto += `${c.nombre} - ${c.tipo}\n`;
 });
 
 resultado.innerText = texto;
