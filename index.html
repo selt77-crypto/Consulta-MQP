@@ -2,24 +2,81 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Convivencia Escolar PRO</title>
+<title>Plataforma Institucional</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
 body{
 margin:0;
 font-family:'Segoe UI';
-background:linear-gradient(135deg,#0f172a,#1e3a8a);
+background:
+linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+url('fondo_estudiantes.jpg'); /* 🔥 tu imagen del repo */
+background-size:cover;
+color:white;
 }
-#login{display:flex;height:100vh;justify-content:center;align-items:center;}
-.login-box{background:white;padding:40px;border-radius:15px;width:320px;text-align:center;}
-#app{display:none;padding:20px;}
-.container{max-width:900px;margin:auto;background:white;padding:30px;border-radius:20px;}
-input,textarea,select{width:100%;margin:10px 0;padding:10px;}
-button{background:gold;padding:10px;margin:5px;border:none;border-radius:8px;}
-#resultado{background:#f4f4f4;padding:20px;margin-top:20px;white-space:pre-wrap;}
+
+/* LOGIN */
+#login{
+display:flex;
+height:100vh;
+justify-content:center;
+align-items:center;
+}
+
+.login-box{
+background:white;
+color:black;
+padding:30px;
+border-radius:15px;
+width:300px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+}
+
+button{
+background:gold;
+padding:10px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin:5px;
+}
+
+/* APP */
+#app{
+display:none;
+padding:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+color:black;
+padding:30px;
+border-radius:20px;
+}
+
+.botones{
+text-align:center;
+}
+
+#resultado{
+margin-top:20px;
+background:#f4f4f4;
+padding:20px;
+white-space:pre-wrap;
+}
 </style>
+
 </head>
 
 <body>
@@ -36,18 +93,24 @@ button{background:gold;padding:10px;margin:5px;border:none;border-radius:8px;}
 <div id="app">
 <div class="container">
 
-<input id="nombre" placeholder="Nombre">
+<h2>Panel de Convivencia</h2>
+
+<input id="nombre" placeholder="Nombre estudiante">
+
 <select id="grado">
-<option>Pre-escolar</option><option>1°</option><option>2°</option>
-<option>3°</option><option>4°</option><option>5°</option>
 <option>6°1</option><option>7°1</option><option>8°1</option>
 <option>9°1</option><option>10°1</option><option>11°1</option>
 </select>
 
 <textarea id="caso"></textarea>
 
+<div class="botones">
 <button onclick="analizar()">Analizar</button>
+<button onclick="historial()">Historial</button>
+<button onclick="buscar()">Buscar</button>
+<button onclick="reporteCurso()">Reporte Curso</button>
 <button onclick="pdf()">PDF</button>
+</div>
 
 <div id="resultado"></div>
 
@@ -55,70 +118,73 @@ button{background:gold;padding:10px;margin:5px;border:none;border-radius:8px;}
 </div>
 
 <script>
+
 const { jsPDF } = window.jspdf;
-const URL = "https://consulta-backend-eg98.onrender.com";
+const URL="https://consulta-backend-eg98.onrender.com";
 
 function login(){
-let u=user.value.trim();
-let p=pass.value.trim();
-if(u==="docente"&&p==="123"){
-login.style.display="none";app.style.display="block";
-}else{alert("Error");}
+if(user.value==="docente"&&pass.value==="123"){
+login.style.display="none";
+app.style.display="block";
+}else alert("Error");
 }
 
 async function analizar(){
+
 let nombre=nombre.value;
 let grado=grado.value;
 let caso=caso.value;
 
-let res=await fetch(URL+"/analizar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre,grado,caso})});
+let res=await fetch(URL+"/analizar",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({nombre,grado,caso})
+});
+
 let data=await res.json();
 
-resultado.innerText=`ACTA\n\n${data.resultado}`;
+resultado.innerText=`${nombre} - ${grado}\n${data.resultado}`;
 }
 
-// PDF NIVEL INSTITUCIONAL
+async function historial(){
+let r=await fetch(URL+"/casos");
+let d=await r.json();
+resultado.innerText=JSON.stringify(d,null,2);
+}
+
+async function buscar(){
+let n=prompt("Nombre");
+let r=await fetch(URL+"/buscar/"+n);
+let d=await r.json();
+resultado.innerText=JSON.stringify(d,null,2);
+}
+
+async function reporteCurso(){
+let g=grado.value;
+let r=await fetch(URL+"/curso/"+g);
+let d=await r.json();
+resultado.innerText=JSON.stringify(d,null,2);
+}
+
+// PDF COMPLETO
 function pdf(){
 
 let doc=new jsPDF();
 let texto=resultado.innerText;
 let lineas=doc.splitTextToSize(texto,180);
 
-let y=40;
+let y=30;
 let pageHeight=doc.internal.pageSize.height;
 
-let pagina=1;
-
-function encabezado(){
-doc.addImage("escudo.png","PNG",10,5,20,20);
-doc.setFontSize(10);
-doc.text("INSTITUCIÓN EDUCATIVA",40,15);
-doc.line(10,25,200,25);
-}
-
-function pie(){
-doc.setFontSize(8);
-doc.text("Página "+pagina,180,290);
-}
-
-encabezado();
-
 lineas.forEach(linea=>{
-if(y>270){
-pie();
-doc.addPage();
-pagina++;
-encabezado();
-y=40;
-}
+if(y>270){doc.addPage();y=20;}
 doc.text(linea,10,y);
 y+=7;
 });
 
-pie();
-
-doc.save("acta.pdf");
+doc.save("reporte.pdf");
 }
+
 </script>
 
 </body>
