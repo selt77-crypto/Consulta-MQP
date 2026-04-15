@@ -2,44 +2,51 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Convivencia Escolar PRO</title>
+<title>Convivencia Escolar Institucional</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{
-font-family:Arial;
-background:#1e3a8a;
 margin:0;
+font-family:'Segoe UI';
+background:#1e3a8a;
 color:white;
 }
+
 .container{
-background:white;
-color:black;
 max-width:900px;
 margin:auto;
+background:white;
+color:black;
 padding:25px;
-border-radius:12px;
 margin-top:30px;
+border-radius:12px;
 }
+
 input,textarea,select{
 width:100%;
 padding:10px;
 margin:8px 0;
+border-radius:6px;
 }
+
 button{
 background:#f1c40f;
 padding:10px;
 border:none;
-margin:5px;
 border-radius:8px;
+margin:5px;
 cursor:pointer;
+font-weight:bold;
 }
+
 #resultado,#citacion{
 background:#f4f4f4;
 padding:20px;
 margin-top:15px;
 white-space:pre-wrap;
+border-left:5px solid #1e3a8a;
 }
 </style>
 </head>
@@ -50,13 +57,17 @@ white-space:pre-wrap;
 
 <h2>Gestión de Convivencia Escolar</h2>
 
-<input id="nombre" placeholder="Nombre estudiante">
+<input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
 <option>Pre-escolar</option><option>1°</option><option>2°</option>
 <option>3°</option><option>4°</option><option>5°</option>
-<option>6°1</option><option>7°1</option><option>8°1</option>
-<option>9°1</option><option>10°1</option><option>11°1</option>
+<option>6°1</option><option>6°2</option>
+<option>7°1</option><option>7°2</option>
+<option>8°1</option><option>8°2</option>
+<option>9°1</option><option>9°2</option><option>9°3</option>
+<option>10°1</option><option>10°2</option>
+<option>11°1</option><option>11°2</option>
 </select>
 
 <textarea id="caso" placeholder="Describa el caso"></textarea>
@@ -81,27 +92,44 @@ white-space:pre-wrap;
 
 const { jsPDF } = window.jspdf;
 
-// 🧠 ANALISIS
+// 🧠 MOTOR EXPERTO
 function analizar(){
 
 let nombre=val("nombre");
 let grado=val("grado");
-let caso=val("caso");
+let caso=val("caso").toLowerCase();
 
 if(!nombre||!caso){
 alert("Complete todos los campos");
 return;
 }
 
-let tipo="Tipo I – Situación leve";
+// 🔎 CLASIFICACIÓN INTELIGENTE
+let tipo, analisis, ruta, medidas, citacion;
 
-if(/golpe|agredir|puño|patada/.test(caso.toLowerCase())){
+if(/arma|droga|lesión|grave|policía/.test(caso)){
 tipo="Tipo III – Situación grave";
+analisis="Conducta que afecta gravemente la integridad física o la convivencia escolar.";
+ruta="- Activación inmediata del Comité de Convivencia\n- Remisión a entidades externas";
+medidas="- Citación inmediata a acudiente\n- Registro disciplinario\n- Posibles sanciones institucionales";
+citacion="OBLIGATORIA";
 }
-else if(/groser|reiter/.test(caso.toLowerCase())){
-tipo="Tipo II – Convivencia";
+else if(/golpe|agredir|groser|reiter|irrespeto/.test(caso)){
+tipo="Tipo II – Afecta la convivencia";
+analisis="Conducta reiterada que afecta el ambiente escolar y el respeto.";
+ruta="- Registro en observador\n- Seguimiento por coordinación";
+medidas="- Compromiso pedagógico\n- Actividades formativas\n- Seguimiento";
+citacion="RECOMENDADA";
+}
+else{
+tipo="Tipo I – Situación leve";
+analisis="Conducta ocasional que puede corregirse pedagógicamente.";
+ruta="- Manejo en aula\n- Seguimiento docente";
+medidas="- Llamado de atención\n- Orientación pedagógica";
+citacion="NO NECESARIA";
 }
 
+// 📄 ACTA PROFESIONAL
 let texto=`
 ACTA DE CONVIVENCIA
 
@@ -117,6 +145,18 @@ ${caso}
 Clasificación:
 ${tipo}
 
+Análisis pedagógico:
+${analisis}
+
+Ruta de atención:
+${ruta}
+
+Medidas pedagógicas:
+${medidas}
+
+Decisión sobre citación:
+${citacion}
+
 Fundamento legal:
 Ley 1620 de 2013
 Decreto 1965 de 2013
@@ -128,7 +168,7 @@ Coordinación: __________________
 Rectoría: ______________________
 `;
 
-document.getElementById("resultado").innerText=texto;
+resultado.innerText=texto;
 }
 
 // 📩 CITACIÓN
@@ -146,7 +186,7 @@ return;
 }
 
 let texto=`
-CITACIÓN A PADRES DE FAMILIA
+CITACIÓN A ACUDIENTE
 
 Fecha: ${fecha}
 Hora: ${hora}
@@ -157,7 +197,7 @@ Grado: ${grado}
 Motivo:
 ${caso}
 
-Se solicita su asistencia para tratar la situación presentada.
+Se solicita su presencia para atender la situación presentada.
 
 Atentamente,
 
@@ -166,20 +206,10 @@ Coordinación: __________________
 Rectoría: ______________________
 `;
 
-document.getElementById("citacion").innerText=texto;
+citacion.innerText=texto;
 }
 
-// 📄 PDF ACTA (FORMATO CORRECTO)
-function pdfActa(){
-crearPDF(document.getElementById("resultado").innerText,"acta");
-}
-
-// 📄 PDF CITACION
-function pdfCitacion(){
-crearPDF(document.getElementById("citacion").innerText,"citacion");
-}
-
-// 🧠 GENERADOR PDF PROFESIONAL
+// 📄 PDF
 function crearPDF(texto,nombre){
 
 let doc=new jsPDF();
@@ -201,7 +231,14 @@ y+=7;
 doc.save(nombre+".pdf");
 }
 
-// helper
+function pdfActa(){
+crearPDF(resultado.innerText,"acta");
+}
+
+function pdfCitacion(){
+crearPDF(citacion.innerText,"citacion");
+}
+
 function val(id){
 return document.getElementById(id).value.trim();
 }
