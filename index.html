@@ -2,57 +2,124 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Convivencia</title>
+<title>Convivencia Escolar PRO</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
 body{
 margin:0;
-font-family:'Segoe UI';
-background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
-url('fondo_estudiantes.jpg');
-background-size:cover;
-color:white;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
 }
 
+/* LOGIN */
 #login{
-text-align:center;
-margin-top:120px;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-.container{
-display:none;
-max-width:900px;
-margin:30px auto;
+.login-box{
 background:white;
-color:black;
-padding:30px;
-border-radius:20px;
+padding:40px;
+border-radius:15px;
+width:320px;
+text-align:center;
+box-shadow:0 15px 40px rgba(0,0,0,0.4);
 }
 
-input,textarea,select{
+.login-box img{
+width:80px;
+margin-bottom:15px;
+}
+
+input{
 width:100%;
-margin:10px 0;
 padding:10px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
 }
 
 button{
-background:gold;
+background:#facc15;
 border:none;
 padding:10px;
-margin:5px;
+width:100%;
 border-radius:8px;
 cursor:pointer;
+font-weight:bold;
+transition:0.2s;
 }
 
+button:hover{
+background:#eab308;
+}
+
+button:active{
+transform:scale(0.95);
+}
+
+/* APP */
+#app{
+display:none;
+padding:20px;
+}
+
+.app-container{
+max-width:900px;
+margin:auto;
+background:white;
+border-radius:20px;
+padding:30px;
+box-shadow:0 10px 40px rgba(0,0,0,0.4);
+}
+
+.header{
+text-align:center;
+margin-bottom:20px;
+}
+
+.header img{
+width:70px;
+}
+
+.header h2{
+margin:5px 0;
+color:#1e3a8a;
+}
+
+select, textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.botones{
+text-align:center;
+}
+
+.botones button{
+width:auto;
+padding:10px 15px;
+margin:5px;
+}
+
+/* RESULTADO */
 #resultado{
 margin-top:20px;
-background:#f4f4f4;
+background:#f8fafc;
 padding:20px;
 border-radius:10px;
+border-left:6px solid #1e3a8a;
 white-space:pre-wrap;
 }
+
 </style>
 </head>
 
@@ -60,86 +127,109 @@ white-space:pre-wrap;
 
 <!-- LOGIN -->
 <div id="login">
-<h2>Ingreso al sistema</h2>
-<input id="user" placeholder="Usuario"><br>
-<input id="pass" type="password" placeholder="Contraseña"><br>
+<div class="login-box">
+<img src="escudo.png">
+<h3>Ingreso al sistema</h3>
+
+<input id="user" placeholder="Usuario">
+<input id="pass" type="password" placeholder="Contraseña">
+
 <button onclick="login()">Ingresar</button>
+</div>
 </div>
 
 <!-- APP -->
-<div class="container" id="app">
+<div id="app">
 
-<h2 id="rol"></h2>
+<div class="app-container">
+
+<div class="header">
+<img src="escudo.png">
+<h2>Institución Educativa</h2>
+<p id="rol"></p>
+</div>
 
 <input id="nombre" placeholder="Nombre del estudiante">
 
 <select id="grado">
 <option value="">Seleccione grado</option>
-<option>6°1</option><option>7°1</option>
-<option>8°1</option><option>9°1</option>
-<option>10°1</option><option>11°1</option>
+<option>Pre-escolar</option>
+<option>1°</option><option>2°</option><option>3°</option>
+<option>4°</option><option>5°</option>
+<option>6°1</option><option>6°2</option>
+<option>7°1</option><option>7°2</option>
+<option>8°1</option><option>8°2</option>
+<option>9°1</option><option>9°2</option><option>9°3</option>
+<option>10°1</option><option>10°2</option>
+<option>11°1</option><option>11°2</option>
 </select>
 
 <textarea id="caso" placeholder="Describa el caso"></textarea>
 
+<label>Fecha citación</label>
+<input type="date" id="fecha">
+
+<label>Hora citación</label>
+<input type="time" id="hora">
+
+<div class="botones">
 <button onclick="analizar()">Analizar</button>
-<button onclick="pdf()">PDF</button>
+<button onclick="pdf()">Acta PDF</button>
 <button onclick="citacion()">Citación</button>
-<button onclick="historial()">Historial</button>
-<button onclick="buscar()">Buscar</button>
+</div>
 
 <div id="resultado"></div>
 
 </div>
+</div>
 
 <script>
+
 const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
-// 🔐 USUARIOS
 const usuarios = {
-docente:{pass:"123",rol:"Docente"},
-coordinador:{pass:"123",rol:"Coordinador"},
-rector:{pass:"123",rol:"Rector"}
+docente:"123",
+coordinador:"123",
+rector:"123"
 };
 
 function login(){
-let u=user.value;
-let p=pass.value;
 
-if(usuarios[u] && usuarios[u].pass===p){
+let u=user.value.trim().toLowerCase();
+let p=pass.value.trim();
+
+if(usuarios[u] && usuarios[u]===p){
 login.style.display="none";
 app.style.display="block";
-rol.innerText="Rol: "+usuarios[u].rol;
+rol.innerText="Rol: "+u;
 }else{
 alert("Datos incorrectos");
 }
 }
 
-// ANALIZAR
 async function analizar(){
-let nombre=document.getElementById("nombre").value;
-let grado=document.getElementById("grado").value;
-let caso=document.getElementById("caso").value;
 
-let fecha=new Date().toLocaleDateString();
+let nombre = document.getElementById("nombre").value;
+let grado = document.getElementById("grado").value;
+let caso = document.getElementById("caso").value;
+
+let fechaActual = new Date().toLocaleDateString();
 
 resultado.innerText="Analizando...";
 
-let res=await fetch(URL+"/analizar",{
+let res = await fetch(URL+"/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({nombre,grado,caso})
 });
 
-let data=await res.json();
+let data = await res.json();
 
-resultado.innerText=
+resultado.innerText =
 `ACTA DE CONVIVENCIA
 
-INSTITUCIÓN EDUCATIVA
-
-Fecha: ${fecha}
+Fecha: ${fechaActual}
 
 Estudiante: ${nombre}
 Grado: ${grado}
@@ -149,18 +239,20 @@ ${caso}
 
 ${data.resultado}
 
-Firma Docente: __________
-Firma Coordinador: __________
-Firma Rector: __________`;
+Firma Docente: ____________________
+Firma Coordinador: ____________________
+Firma Rector: ____________________`;
 }
 
 // PDF
 function pdf(){
+
 let doc=new jsPDF();
 
 doc.addImage("escudo.png","PNG",85,10,30,30);
 
-doc.text(resultado.innerText,10,50);
+let lineas = doc.splitTextToSize(resultado.innerText,180);
+doc.text(lineas,10,50);
 
 doc.setTextColor(200,200,200);
 doc.text("INSTITUCIONAL",60,150,{angle:45});
@@ -170,48 +262,33 @@ doc.save("acta.pdf");
 
 // CITACIÓN
 function citacion(){
+
 let doc=new jsPDF();
 
 doc.addImage("escudo.png","PNG",85,10,30,30);
 
-doc.text("CITACIÓN A PADRES",40,50);
-doc.text("Estudiante: "+nombre.value,20,80);
-doc.text("Motivo:",20,100);
-doc.text(caso.value,20,110);
+let texto = `
+CITACIÓN A PADRES
 
-doc.text("Fecha: __________",20,140);
+Estudiante: ${nombre.value}
+
+Motivo:
+${caso.value}
+
+Fecha: ${fecha.value}
+Hora: ${hora.value}
+
+Firma Docente: ____________________
+Firma Coordinación: ____________________
+Firma Rector(si aplica): ___________________
+`;
+
+let lineas = doc.splitTextToSize(texto,180);
+doc.text(lineas,20,60);
 
 doc.save("citacion.pdf");
 }
 
-// HISTORIAL
-async function historial(){
-let res=await fetch(URL+"/casos");
-let data=await res.json();
-
-let texto="HISTORIAL\n\n";
-
-data.reverse().forEach(c=>{
-texto+=`${c.nombre} - ${c.fecha}\n`;
-});
-
-resultado.innerText=texto;
-}
-
-// BUSCAR
-async function buscar(){
-let n=prompt("Nombre estudiante");
-let res=await fetch(URL+"/buscar/"+n);
-let data=await res.json();
-
-let texto="RESULTADOS\n\n";
-
-data.forEach(c=>{
-texto+=`${c.nombre} - ${c.fecha}\n${c.caso}\n\n`;
-});
-
-resultado.innerText=texto;
-}
 </script>
 
 </body>
