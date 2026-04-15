@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Asesor de Convivencia Escolar</title>
+<title>Sistema de Convivencia</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -16,15 +16,9 @@ background-size:cover;
 color:white;
 }
 
-/* LOGIN */
 #login{
 text-align:center;
 margin-top:120px;
-}
-
-input{
-padding:10px;
-margin:5px;
 }
 
 .container{
@@ -37,22 +31,20 @@ padding:30px;
 border-radius:20px;
 }
 
-textarea, select{
+input,textarea,select{
 width:100%;
 margin:10px 0;
 padding:10px;
 }
 
 button{
-background:#f4c400;
+background:gold;
 border:none;
 padding:10px;
 margin:5px;
 border-radius:8px;
 cursor:pointer;
 }
-
-button:active{transform:scale(0.95);}
 
 #resultado{
 margin-top:20px;
@@ -93,63 +85,59 @@ white-space:pre-wrap;
 <button onclick="analizar()">Analizar</button>
 <button onclick="pdf()">PDF</button>
 <button onclick="citacion()">Citación</button>
+<button onclick="historial()">Historial</button>
+<button onclick="buscar()">Buscar</button>
 
 <div id="resultado"></div>
 
 </div>
 
 <script>
-
 const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
-// 🔐 USUARIOS (LOCAL)
+// 🔐 USUARIOS
 const usuarios = {
-docente:{pass:"123", rol:"Docente"},
-coordinador:{pass:"123", rol:"Coordinador"},
-rector:{pass:"123", rol:"Rector"}
+docente:{pass:"123",rol:"Docente"},
+coordinador:{pass:"123",rol:"Coordinador"},
+rector:{pass:"123",rol:"Rector"}
 };
 
-// LOGIN
 function login(){
-
-let u = document.getElementById("user").value;
-let p = document.getElementById("pass").value;
+let u=user.value;
+let p=pass.value;
 
 if(usuarios[u] && usuarios[u].pass===p){
-
-document.getElementById("login").style.display="none";
-document.getElementById("app").style.display="block";
-
-document.getElementById("rol").innerText = "Rol: " + usuarios[u].rol;
-
+login.style.display="none";
+app.style.display="block";
+rol.innerText="Rol: "+usuarios[u].rol;
 }else{
 alert("Datos incorrectos");
 }
-
 }
 
 // ANALIZAR
 async function analizar(){
+let nombre=document.getElementById("nombre").value;
+let grado=document.getElementById("grado").value;
+let caso=document.getElementById("caso").value;
 
-let nombre = document.getElementById("nombre").value;
-let grado = document.getElementById("grado").value;
-let caso = document.getElementById("caso").value;
+let fecha=new Date().toLocaleDateString();
 
-let fecha = new Date().toLocaleDateString();
+resultado.innerText="Analizando...";
 
-let res = await fetch(URL+"/analizar",{
+let res=await fetch(URL+"/analizar",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({nombre, grado, caso})
+body:JSON.stringify({nombre,grado,caso})
 });
 
-let data = await res.json();
+let data=await res.json();
 
-resultado.innerText =
+resultado.innerText=
 `ACTA DE CONVIVENCIA
 
-INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA
+INSTITUCIÓN EDUCATIVA
 
 Fecha: ${fecha}
 
@@ -161,55 +149,69 @@ ${caso}
 
 ${data.resultado}
 
-Firma Docente: ____________________
-Firma Coordinador: ____________________
-Firma Psicoorientador: ____________________
-Firma Rector: ____________________
-`;
+Firma Docente: __________
+Firma Coordinador: __________
+Firma Rector: __________`;
 }
 
-// PDF CON ESCUDO
+// PDF
 function pdf(){
+let doc=new jsPDF();
 
-let doc = new jsPDF();
+doc.addImage("escudo.png","PNG",85,10,30,30);
 
-doc.addImage("escudo.png","PNG",90,10,30,30);
+doc.text(resultado.innerText,10,50);
 
-doc.setFontSize(14);
-doc.text("ACTA DE CONVIVENCIA", 60, 50);
-
-doc.setFontSize(10);
-doc.text(resultado.innerText,10,70);
-
-// marca de agua
 doc.setTextColor(200,200,200);
-doc.text("M.Q.P",80,150,{angle:45});
+doc.text("INSTITUCIONAL",60,150,{angle:45});
 
 doc.save("acta.pdf");
 }
 
 // CITACIÓN
 function citacion(){
+let doc=new jsPDF();
 
-let doc = new jsPDF();
+doc.addImage("escudo.png","PNG",85,10,30,30);
 
-doc.addImage("escudo.png","PNG",90,10,30,30);
-
-doc.text("CITACIÓN A PADRES DE FAMILIA", 40, 50);
-
-doc.text("Estudiante: "+document.getElementById("nombre").value,20,80);
-
+doc.text("CITACIÓN A PADRES",40,50);
+doc.text("Estudiante: "+nombre.value,20,80);
 doc.text("Motivo:",20,100);
-doc.text(document.getElementById("caso").value,20,110);
+doc.text(caso.value,20,110);
 
-doc.text("Fecha: ____________________",20,140);
-
-doc.text("Firma Docente: ____________________",20,170);
-doc.text("Firma Coordinación: ____________________",20,190);
+doc.text("Fecha: __________",20,140);
 
 doc.save("citacion.pdf");
 }
 
+// HISTORIAL
+async function historial(){
+let res=await fetch(URL+"/casos");
+let data=await res.json();
+
+let texto="HISTORIAL\n\n";
+
+data.reverse().forEach(c=>{
+texto+=`${c.nombre} - ${c.fecha}\n`;
+});
+
+resultado.innerText=texto;
+}
+
+// BUSCAR
+async function buscar(){
+let n=prompt("Nombre estudiante");
+let res=await fetch(URL+"/buscar/"+n);
+let data=await res.json();
+
+let texto="RESULTADOS\n\n";
+
+data.forEach(c=>{
+texto+=`${c.nombre} - ${c.fecha}\n${c.caso}\n\n`;
+});
+
+resultado.innerText=texto;
+}
 </script>
 
 </body>
