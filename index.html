@@ -8,65 +8,76 @@
 
 <style>
 body{
-    margin:0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-    url('fondo_estudiantes.jpg');
-    background-size:cover;
-    color:white;
+margin:0;
+font-family:'Segoe UI';
+background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+url('fondo_estudiantes.jpg');
+background-size:cover;
+color:white;
+}
+
+/* LOGIN */
+#login{
+text-align:center;
+margin-top:120px;
+}
+
+input{
+padding:10px;
+margin:5px;
 }
 
 .container{
-    max-width:900px;
-    margin:40px auto;
-    background:white;
-    color:black;
-    padding:30px;
-    border-radius:20px;
+display:none;
+max-width:900px;
+margin:30px auto;
+background:white;
+color:black;
+padding:30px;
+border-radius:20px;
 }
 
-h1{text-align:center;}
-
-input, textarea, select{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border-radius:8px;
+textarea, select{
+width:100%;
+margin:10px 0;
+padding:10px;
 }
 
 button{
-    background:#f4c400;
-    border:none;
-    padding:12px;
-    margin:5px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:bold;
+background:#f4c400;
+border:none;
+padding:10px;
+margin:5px;
+border-radius:8px;
+cursor:pointer;
 }
 
-button:active{
-    transform:scale(0.95);
-}
+button:active{transform:scale(0.95);}
 
 #resultado{
-    margin-top:20px;
-    padding:20px;
-    background:#f4f4f4;
-    border-radius:10px;
-    white-space:pre-wrap;
-}
-
-.botones{
-    text-align:center;
+margin-top:20px;
+background:#f4f4f4;
+padding:20px;
+border-radius:10px;
+white-space:pre-wrap;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="login">
+<h2>Ingreso al sistema</h2>
+<input id="user" placeholder="Usuario"><br>
+<input id="pass" type="password" placeholder="Contraseña"><br>
+<button onclick="login()">Ingresar</button>
+</div>
 
-<h1>Asesor de Convivencia Escolar</h1>
+<!-- APP -->
+<div class="container" id="app">
+
+<h2 id="rol"></h2>
 
 <input id="nombre" placeholder="Nombre del estudiante">
 
@@ -79,11 +90,9 @@ button:active{
 
 <textarea id="caso" placeholder="Describa el caso"></textarea>
 
-<div class="botones">
 <button onclick="analizar()">Analizar</button>
-<button onclick="descargarPDF()">Descargar PDF</button>
+<button onclick="pdf()">PDF</button>
 <button onclick="citacion()">Citación</button>
-</div>
 
 <div id="resultado"></div>
 
@@ -94,18 +103,40 @@ button:active{
 const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
+// 🔐 USUARIOS (LOCAL)
+const usuarios = {
+docente:{pass:"123", rol:"Docente"},
+coordinador:{pass:"123", rol:"Coordinador"},
+rector:{pass:"123", rol:"Rector"}
+};
+
+// LOGIN
+function login(){
+
+let u = document.getElementById("user").value;
+let p = document.getElementById("pass").value;
+
+if(usuarios[u] && usuarios[u].pass===p){
+
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+
+document.getElementById("rol").innerText = "Rol: " + usuarios[u].rol;
+
+}else{
+alert("Datos incorrectos");
+}
+
+}
+
+// ANALIZAR
 async function analizar(){
 
 let nombre = document.getElementById("nombre").value;
 let grado = document.getElementById("grado").value;
 let caso = document.getElementById("caso").value;
 
-if(!nombre || !grado || !caso){
-alert("Complete todos los campos");
-return;
-}
-
-resultado.innerText = "Analizando...";
+let fecha = new Date().toLocaleDateString();
 
 let res = await fetch(URL+"/analizar",{
 method:"POST",
@@ -120,71 +151,61 @@ resultado.innerText =
 
 INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA
 
+Fecha: ${fecha}
+
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Descripción del caso:
+Descripción:
 ${caso}
 
 ${data.resultado}
 
 Firma Docente: ____________________
-
 Firma Coordinador: ____________________
-
 Firma Psicoorientador: ____________________
-
 Firma Rector: ____________________
 `;
 }
 
-// 📄 PDF PROFESIONAL
-function descargarPDF(){
+// PDF CON ESCUDO
+function pdf(){
 
 let doc = new jsPDF();
 
-doc.setFontSize(16);
-doc.text("ACTA DE CONVIVENCIA", 60, 20);
+doc.addImage("escudo.png","PNG",90,10,30,30);
+
+doc.setFontSize(14);
+doc.text("ACTA DE CONVIVENCIA", 60, 50);
 
 doc.setFontSize(10);
-doc.text("Institución Educativa Manuel Quintero Penilla", 40, 30);
+doc.text(resultado.innerText,10,70);
 
-// Marca de agua
+// marca de agua
 doc.setTextColor(200,200,200);
-doc.text("M.Q.P", 80, 150, {angle:45});
+doc.text("M.Q.P",80,150,{angle:45});
 
-doc.setTextColor(0,0,0);
-doc.setFontSize(11);
-
-let texto = resultado.innerText;
-doc.text(texto, 10, 50);
-
-let nombre = document.getElementById("nombre").value;
-let grado = document.getElementById("grado").value;
-
-doc.save(`acta_${nombre}_${grado}.pdf`);
+doc.save("acta.pdf");
 }
 
-// 📩 CITACIÓN
+// CITACIÓN
 function citacion(){
 
 let doc = new jsPDF();
 
-doc.setFontSize(14);
-doc.text("CITACIÓN A PADRES DE FAMILIA", 40, 20);
+doc.addImage("escudo.png","PNG",90,10,30,30);
 
-doc.setFontSize(11);
+doc.text("CITACIÓN A PADRES DE FAMILIA", 40, 50);
 
-doc.text("Se cita al acudiente del estudiante:", 20, 40);
-doc.text(document.getElementById("nombre").value, 20, 50);
+doc.text("Estudiante: "+document.getElementById("nombre").value,20,80);
 
-doc.text("Motivo:", 20, 70);
-doc.text(document.getElementById("caso").value, 20, 80);
+doc.text("Motivo:",20,100);
+doc.text(document.getElementById("caso").value,20,110);
 
-doc.text("Fecha: ____________________", 20, 110);
+doc.text("Fecha: ____________________",20,140);
 
-doc.text("Firma Docente: ____________________", 20, 140);
-doc.text("Firma Coordinación: ____________________", 20, 160);
+doc.text("Firma Docente: ____________________",20,170);
+doc.text("Firma Coordinación: ____________________",20,190);
 
 doc.save("citacion.pdf");
 }
