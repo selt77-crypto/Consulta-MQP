@@ -7,171 +7,47 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-
 body{
 margin:0;
-font-family:'Segoe UI',sans-serif;
+font-family:'Segoe UI';
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
 }
-
-/* LOGIN */
-#login{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-.login-box{
-background:white;
-padding:40px;
-border-radius:15px;
-width:320px;
-text-align:center;
-box-shadow:0 15px 40px rgba(0,0,0,0.4);
-}
-
-.login-box img{
-width:80px;
-margin-bottom:15px;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-button{
-background:#facc15;
-border:none;
-padding:10px;
-width:100%;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-transition:0.2s;
-}
-
-button:hover{ background:#eab308; }
-button:active{ transform:scale(0.95); }
-
-/* APP */
-#app{
-display:none;
-padding:20px;
-}
-
-.app-container{
-max-width:900px;
-margin:auto;
-background:white;
-border-radius:20px;
-padding:30px;
-box-shadow:0 10px 40px rgba(0,0,0,0.4);
-}
-
-.header{
-text-align:center;
-margin-bottom:20px;
-}
-
-.header img{
-width:70px;
-}
-
-.header h2{
-margin:5px 0;
-color:#1e3a8a;
-}
-
-select, textarea{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-.botones{
-text-align:center;
-}
-
-.botones button{
-width:auto;
-padding:10px 15px;
-margin:5px;
-}
-
-/* RESULTADO */
-#resultado{
-margin-top:20px;
-background:#f8fafc;
-padding:20px;
-border-radius:10px;
-border-left:6px solid #1e3a8a;
-white-space:pre-wrap;
-}
-
+#login{display:flex;height:100vh;justify-content:center;align-items:center;}
+.login-box{background:white;padding:40px;border-radius:15px;width:320px;text-align:center;}
+#app{display:none;padding:20px;}
+.container{max-width:900px;margin:auto;background:white;padding:30px;border-radius:20px;}
+input,textarea,select{width:100%;margin:10px 0;padding:10px;}
+button{background:gold;padding:10px;margin:5px;border:none;border-radius:8px;}
+#resultado{background:#f4f4f4;padding:20px;margin-top:20px;white-space:pre-wrap;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="login">
 <div class="login-box">
-<img src="escudo.png">
-<h3>Ingreso al sistema</h3>
-
-<input id="user" placeholder="Usuario">
-<input id="pass" type="password" placeholder="Contraseña">
-
-<button onclick="login()">Ingresar</button>
+<h3>Ingreso</h3>
+<input id="user">
+<input id="pass" type="password">
+<button onclick="login()">Entrar</button>
 </div>
 </div>
 
-<!-- APP -->
 <div id="app">
+<div class="container">
 
-<div class="app-container">
-
-<div class="header">
-<img src="escudo.png">
-<h2>Institución Educativa</h2>
-<p id="rol"></p>
-</div>
-
-<input id="nombre" placeholder="Nombre del estudiante">
-
+<input id="nombre" placeholder="Nombre">
 <select id="grado">
-<option value="">Seleccione grado</option>
-<option>Pre-escolar</option>
-<option>1°</option><option>2°</option><option>3°</option>
-<option>4°</option><option>5°</option>
-<option>6°1</option><option>6°2</option>
-<option>7°1</option><option>7°2</option>
-<option>8°1</option><option>8°2</option>
-<option>9°1</option><option>9°2</option><option>9°3</option>
-<option>10°1</option><option>10°2</option>
-<option>11°1</option><option>11°2</option>
+<option>Pre-escolar</option><option>1°</option><option>2°</option>
+<option>3°</option><option>4°</option><option>5°</option>
+<option>6°1</option><option>7°1</option><option>8°1</option>
+<option>9°1</option><option>10°1</option><option>11°1</option>
 </select>
 
-<textarea id="caso" placeholder="Describa el caso"></textarea>
+<textarea id="caso"></textarea>
 
-<label>Fecha citación</label>
-<input type="date" id="fecha">
-
-<label>Hora citación</label>
-<input type="time" id="hora">
-
-<div class="botones">
 <button onclick="analizar()">Analizar</button>
-<button onclick="pdf()">Acta PDF</button>
-<button onclick="citacion()">Citación</button>
-</div>
+<button onclick="pdf()">PDF</button>
 
 <div id="resultado"></div>
 
@@ -179,122 +55,70 @@ white-space:pre-wrap;
 </div>
 
 <script>
-
 const { jsPDF } = window.jspdf;
 const URL = "https://consulta-backend-eg98.onrender.com";
 
-// 🔐 LOGIN CORREGIDO
 function login(){
-
-let u = document.getElementById("user").value.trim().toLowerCase();
-let p = document.getElementById("pass").value.trim();
-
-if(u === "docente" && p === "123"){
-entrar("Docente");
-return;
+let u=user.value.trim();
+let p=pass.value.trim();
+if(u==="docente"&&p==="123"){
+login.style.display="none";app.style.display="block";
+}else{alert("Error");}
 }
 
-if(u === "coordinador" && p === "123"){
-entrar("Coordinador");
-return;
-}
-
-if(u === "rector" && p === "123"){
-entrar("Rector");
-return;
-}
-
-alert("Usuario o contraseña incorrectos");
-}
-
-function entrar(rolUsuario){
-document.getElementById("login").style.display="none";
-document.getElementById("app").style.display="block";
-document.getElementById("rol").innerText="Rol: "+rolUsuario;
-}
-
-// ANALIZAR
 async function analizar(){
+let nombre=nombre.value;
+let grado=grado.value;
+let caso=caso.value;
 
-let nombre = document.getElementById("nombre").value;
-let grado = document.getElementById("grado").value;
-let caso = document.getElementById("caso").value;
+let res=await fetch(URL+"/analizar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre,grado,caso})});
+let data=await res.json();
 
-let fechaActual = new Date().toLocaleDateString();
-
-resultado.innerText="Analizando...";
-
-let res = await fetch(URL+"/analizar",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({nombre,grado,caso})
-});
-
-let data = await res.json();
-
-resultado.innerText =
-`ACTA DE CONVIVENCIA
-
-Fecha: ${fechaActual}
-
-Estudiante: ${nombre}
-Grado: ${grado}
-
-Descripción:
-${caso}
-
-${data.resultado}
-
-Firma Docente: ____________________
-Firma Coordinador: ____________________
-Firma Rector: ____________________`;
+resultado.innerText=`ACTA\n\n${data.resultado}`;
 }
 
-// PDF
+// PDF NIVEL INSTITUCIONAL
 function pdf(){
 
 let doc=new jsPDF();
+let texto=resultado.innerText;
+let lineas=doc.splitTextToSize(texto,180);
 
-doc.addImage("escudo.png","PNG",85,10,30,30);
+let y=40;
+let pageHeight=doc.internal.pageSize.height;
 
-let lineas = doc.splitTextToSize(resultado.innerText,180);
-doc.text(lineas,10,50);
+let pagina=1;
 
-doc.setTextColor(200,200,200);
-doc.text("INSTITUCIONAL",60,150,{angle:45});
+function encabezado(){
+doc.addImage("escudo.png","PNG",10,5,20,20);
+doc.setFontSize(10);
+doc.text("INSTITUCIÓN EDUCATIVA",40,15);
+doc.line(10,25,200,25);
+}
+
+function pie(){
+doc.setFontSize(8);
+doc.text("Página "+pagina,180,290);
+}
+
+encabezado();
+
+lineas.forEach(linea=>{
+if(y>270){
+pie();
+doc.addPage();
+pagina++;
+encabezado();
+y=40;
+}
+doc.text(linea,10,y);
+y+=7;
+});
+
+pie();
 
 doc.save("acta.pdf");
 }
-
-// CITACIÓN
-function citacion(){
-
-let doc=new jsPDF();
-
-doc.addImage("escudo.png","PNG",85,10,30,30);
-
-let texto = `
-CITACIÓN A PADRES DE FAMILIA
-
-Estudiante: ${nombre.value}
-
-Motivo:
-${caso.value}
-
-Fecha: ${fecha.value}
-Hora: ${hora.value}
-
-Firma Docente: ____________________
-Firma Coordinación: ____________________
-Firma Rector (si aplica): ___________________
-`;
-
-let lineas = doc.splitTextToSize(texto,180);
-doc.text(lineas,20,60);
-
-doc.save("citacion.pdf");
-}
-
 </script>
 
 </body>
