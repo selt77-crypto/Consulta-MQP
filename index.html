@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema de Convivencia</title>
+<title>Asesor de Convivencia Escolar</title>
 
 <style>
 body{
@@ -15,7 +15,7 @@ body{
 .container{
     background:white;
     color:black;
-    max-width:600px;
+    max-width:700px;
     margin:auto;
     padding:20px;
     border-radius:10px;
@@ -32,18 +32,25 @@ button{
     padding:10px;
     border:none;
     cursor:pointer;
+    border-radius:6px;
+}
+
+button:active{
+    transform:scale(0.95);
 }
 
 #resultado{
     margin-top:20px;
     white-space:pre-wrap;
+    background:#f4f4f4;
+    padding:15px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Sistema de Convivencia Escolar</h1>
+<h1>Asesor de Convivencia Escolar</h1>
 
 <div class="container">
 
@@ -51,15 +58,28 @@ button{
 
 <select id="grado">
 <option value="">Seleccione grado</option>
+<option>Pre-escolar</option>
+<option>1°</option>
+<option>2°</option>
+<option>3°</option>
+<option>4°</option>
+<option>5°</option>
 <option>6°1</option>
+<option>6°2</option>
 <option>7°1</option>
+<option>7°2</option>
 <option>8°1</option>
+<option>8°2</option>
 <option>9°1</option>
+<option>9°2</option>
+<option>9°3</option>
 <option>10°1</option>
+<option>10°2</option>
 <option>11°1</option>
+<option>11°2</option>
 </select>
 
-<textarea id="caso" placeholder="Describa el caso"></textarea>
+<textarea id="caso" placeholder="Describa el caso de convivencia"></textarea>
 
 <button onclick="analizar()">Analizar</button>
 
@@ -103,7 +123,8 @@ Grado: ${grado}
 ${data.resultado}`;
 
 }catch{
-document.getElementById("resultado").innerText = "Error de conexión";
+document.getElementById("resultado").innerText =
+"Error de conexión con el servidor. Intente nuevamente.";
 }
 
 }
