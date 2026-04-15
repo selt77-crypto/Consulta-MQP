@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Convivencia Escolar Institucional</title>
+<title>Sistema Institucional de Convivencia</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -10,7 +10,10 @@
 body{
 margin:0;
 font-family:'Segoe UI';
-background:#1e3a8a;
+background:
+linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
+url('fondo_estudiantes.jpg');
+background-size:cover;
 color:white;
 }
 
@@ -19,9 +22,19 @@ max-width:900px;
 margin:auto;
 background:white;
 color:black;
-padding:25px;
-margin-top:30px;
-border-radius:12px;
+padding:30px;
+margin-top:40px;
+border-radius:15px;
+text-align:center;
+}
+
+.logo{
+width:90px;
+margin-bottom:10px;
+}
+
+h2{
+margin-bottom:20px;
 }
 
 input,textarea,select{
@@ -29,6 +42,7 @@ width:100%;
 padding:10px;
 margin:8px 0;
 border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
@@ -41,12 +55,18 @@ cursor:pointer;
 font-weight:bold;
 }
 
+button:hover{
+background:#d4ac0d;
+}
+
 #resultado,#citacion{
-background:#f4f4f4;
+background:#f9f9f9;
 padding:20px;
-margin-top:15px;
+margin-top:20px;
 white-space:pre-wrap;
-border-left:5px solid #1e3a8a;
+border-left:6px solid #1e3a8a;
+text-align:left;
+font-size:14px;
 }
 </style>
 </head>
@@ -55,7 +75,9 @@ border-left:5px solid #1e3a8a;
 
 <div class="container">
 
-<h2>Gestión de Convivencia Escolar</h2>
+<img src="escudo.png" class="logo">
+
+<h2>INSTITUCIÓN EDUCATIVA<br>GESTIÓN DE CONVIVENCIA ESCOLAR</h2>
 
 <input id="nombre" placeholder="Nombre del estudiante">
 
@@ -92,7 +114,7 @@ border-left:5px solid #1e3a8a;
 
 const { jsPDF } = window.jspdf;
 
-// 🧠 MOTOR EXPERTO
+// 🧠 MOTOR EXPERTO FINAL
 function analizar(){
 
 let nombre=val("nombre");
@@ -104,34 +126,32 @@ alert("Complete todos los campos");
 return;
 }
 
-// 🔎 CLASIFICACIÓN INTELIGENTE
 let tipo, analisis, ruta, medidas, citacion;
 
 if(/arma|droga|lesión|grave|policía/.test(caso)){
-tipo="Tipo III – Situación grave";
-analisis="Conducta que afecta gravemente la integridad física o la convivencia escolar.";
-ruta="- Activación inmediata del Comité de Convivencia\n- Remisión a entidades externas";
-medidas="- Citación inmediata a acudiente\n- Registro disciplinario\n- Posibles sanciones institucionales";
+tipo="TIPO III – SITUACIÓN GRAVE";
+analisis="Se evidencia una conducta que afecta gravemente la integridad física o la convivencia escolar, requiriendo intervención inmediata institucional.";
+ruta="- Activación inmediata del Comité de Convivencia\n- Remisión a entidades externas competentes";
+medidas="- Citación inmediata a acudiente\n- Registro disciplinario\n- Aplicación de medidas correctivas institucionales";
 citacion="OBLIGATORIA";
 }
-else if(/golpe|agredir|groser|reiter|irrespeto/.test(caso)){
-tipo="Tipo II – Afecta la convivencia";
-analisis="Conducta reiterada que afecta el ambiente escolar y el respeto.";
-ruta="- Registro en observador\n- Seguimiento por coordinación";
-medidas="- Compromiso pedagógico\n- Actividades formativas\n- Seguimiento";
+else if(/golpe|agredir|groser|irrespeto|reiter/.test(caso)){
+tipo="TIPO II – AFECTA LA CONVIVENCIA";
+analisis="Se identifican conductas reiteradas que afectan el ambiente escolar y el respeto entre miembros de la comunidad educativa.";
+ruta="- Registro en observador del estudiante\n- Seguimiento por coordinación de convivencia";
+medidas="- Compromiso pedagógico escrito\n- Actividades formativas\n- Seguimiento periódico";
 citacion="RECOMENDADA";
 }
 else{
-tipo="Tipo I – Situación leve";
-analisis="Conducta ocasional que puede corregirse pedagógicamente.";
-ruta="- Manejo en aula\n- Seguimiento docente";
-medidas="- Llamado de atención\n- Orientación pedagógica";
+tipo="TIPO I – SITUACIÓN LEVE";
+analisis="Conducta ocasional que puede ser abordada mediante estrategias pedagógicas dentro del aula.";
+ruta="- Manejo directo por el docente\n- Seguimiento en aula";
+medidas="- Llamado de atención\n- Orientación formativa";
 citacion="NO NECESARIA";
 }
 
-// 📄 ACTA PROFESIONAL
 let texto=`
-ACTA DE CONVIVENCIA
+ACTA DE CONVIVENCIA ESCOLAR
 
 Fecha: ${new Date().toLocaleDateString()}
 Hora: ${new Date().toLocaleTimeString()}
@@ -139,39 +159,41 @@ Hora: ${new Date().toLocaleTimeString()}
 Estudiante: ${nombre}
 Grado: ${grado}
 
-Descripción:
+DESCRIPCIÓN DEL CASO:
 ${caso}
 
-Clasificación:
+CLASIFICACIÓN:
 ${tipo}
 
-Análisis pedagógico:
+ANÁLISIS PEDAGÓGICO:
 ${analisis}
 
-Ruta de atención:
+RUTA DE ATENCIÓN:
 ${ruta}
 
-Medidas pedagógicas:
+MEDIDAS PEDAGÓGICAS:
 ${medidas}
 
-Decisión sobre citación:
+DECISIÓN SOBRE CITACIÓN:
 ${citacion}
 
-Fundamento legal:
+FUNDAMENTO LEGAL:
 Ley 1620 de 2013
 Decreto 1965 de 2013
 
-Firmas:
+FIRMAS:
 
-Docente: _______________________
-Coordinación: __________________
-Rectoría: ______________________
+Docente: ________________________________
+
+Coordinación: ___________________________
+
+Rectoría: _______________________________
 `;
 
 resultado.innerText=texto;
 }
 
-// 📩 CITACIÓN
+// 📩 CITACIÓN FORMAL
 function generarCitacion(){
 
 let nombre=val("nombre");
@@ -186,7 +208,7 @@ return;
 }
 
 let texto=`
-CITACIÓN A ACUDIENTE
+CITACIÓN A PADRES DE FAMILIA / ACUDIENTES
 
 Fecha: ${fecha}
 Hora: ${hora}
@@ -197,32 +219,52 @@ Grado: ${grado}
 Motivo:
 ${caso}
 
-Se solicita su presencia para atender la situación presentada.
+Se solicita su presencia en la institución educativa con el fin de atender la situación presentada y realizar el debido proceso formativo.
 
 Atentamente,
 
-Docente: _______________________
-Coordinación: __________________
-Rectoría: ______________________
+Docente: ________________________________
+
+Coordinación: ___________________________
+
+Rectoría: _______________________________
 `;
 
 citacion.innerText=texto;
 }
 
-// 📄 PDF
+// 🏫 PDF PROFESIONAL
 function crearPDF(texto,nombre){
 
 let doc=new jsPDF();
+
+// 🔷 ENCABEZADO
+doc.addImage("escudo.png","PNG",90,10,25,25);
+doc.setFontSize(12);
+doc.text("INSTITUCIÓN EDUCATIVA",105,40,{align:"center"});
+doc.setFontSize(10);
+doc.text("GESTIÓN DE CONVIVENCIA ESCOLAR",105,46,{align:"center"});
+
+doc.line(10,50,200,50);
+
+// 💧 MARCA DE AGUA
+doc.setTextColor(230,230,230);
+doc.setFontSize(40);
+doc.text("INSTITUCIONAL",35,160,{angle:45});
+doc.setTextColor(0,0,0);
+
+// 📝 TEXTO
 doc.setFont("Times","Normal");
 doc.setFontSize(11);
 
 let lineas=doc.splitTextToSize(texto,170);
-let y=30;
+let y=60;
 
 lineas.forEach(linea=>{
 if(y>270){
 doc.addPage();
-y=20;
+doc.addImage("escudo.png","PNG",90,10,25,25);
+y=60;
 }
 doc.text(linea,20,y);
 y+=7;
@@ -232,11 +274,11 @@ doc.save(nombre+".pdf");
 }
 
 function pdfActa(){
-crearPDF(resultado.innerText,"acta");
+crearPDF(resultado.innerText,"ACTA_CONVIVENCIA");
 }
 
 function pdfCitacion(){
-crearPDF(citacion.innerText,"citacion");
+crearPDF(citacion.innerText,"CITACION_ACUDIENTE");
 }
 
 function val(id){
