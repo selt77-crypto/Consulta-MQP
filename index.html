@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Convivencia Escolar PRO</title>
+<title>Plataforma Institucional de Convivencia</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -10,10 +10,13 @@
 body{
 margin:0;
 font-family:'Segoe UI';
-background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url('fondo_estudiantes.jpg');
+background:
+linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
+url('fondo_estudiantes.jpg');
 background-size:cover;
 color:white;
 }
+
 .container{
 max-width:900px;
 margin:auto;
@@ -23,24 +26,46 @@ padding:30px;
 margin-top:40px;
 border-radius:15px;
 }
+
+h2{text-align:center;}
+
 input,textarea,select{
 width:100%;
 padding:10px;
 margin:8px 0;
+border-radius:5px;
+border:1px solid #ccc;
 }
+
 button{
-background:gold;
-padding:10px;
+background:#f1c40f;
+padding:10px 15px;
 border:none;
 border-radius:8px;
 margin:5px;
 cursor:pointer;
+font-weight:bold;
 }
-#resultado{
+
+button:hover{
+background:#d4ac0d;
+}
+
+.botones{text-align:center;}
+
+#resultado,#citacionBox{
 white-space:pre-wrap;
 background:#f4f4f4;
 padding:20px;
 margin-top:20px;
+border-left:5px solid #1e3a8a;
+}
+
+.footer{
+text-align:center;
+margin-top:20px;
+font-size:12px;
+color:#666;
 }
 </style>
 </head>
@@ -49,23 +74,36 @@ margin-top:20px;
 
 <div class="container">
 
-<h2>Asesor de Convivencia Escolar</h2>
+<h2>Institución Educativa<br>Gestión de Convivencia Escolar</h2>
 
-<input id="nombre" placeholder="Nombre">
+<input id="nombre" placeholder="Nombre del estudiante">
+
 <select id="grado">
 <option>Pre-escolar</option><option>1°</option><option>2°</option>
 <option>3°</option><option>4°</option><option>5°</option>
-<option>6°1</option><option>7°1</option><option>8°1</option>
-<option>9°1</option><option>10°1</option><option>11°1</option>
+<option>6°1</option><option>6°2</option>
+<option>7°1</option><option>7°2</option>
+<option>8°1</option><option>8°2</option>
+<option>9°1</option><option>9°2</option><option>9°3</option>
+<option>10°1</option><option>10°2</option>
+<option>11°1</option><option>11°2</option>
 </select>
 
-<textarea id="caso" placeholder="Describa el caso"></textarea>
+<textarea id="caso" placeholder="Describa el caso de convivencia"></textarea>
 
+<div class="botones">
 <button onclick="analizar()">Analizar</button>
 <button onclick="generarCitacion()">Citación</button>
-<button onclick="pdf()">PDF</button>
+<button onclick="pdfActa()">PDF Acta</button>
+<button onclick="pdfCitacion()">PDF Citación</button>
+</div>
 
 <div id="resultado"></div>
+<div id="citacionBox"></div>
+
+<div class="footer">
+Sistema Institucional de Convivencia Escolar
+</div>
 
 </div>
 
@@ -78,12 +116,12 @@ async function analizar(){
 
 try{
 
-let nombre=document.getElementById("nombre").value.trim();
+let nombre=nombreInput();
 let grado=document.getElementById("grado").value;
-let caso=document.getElementById("caso").value.trim();
+let caso=casoInput();
 
 if(!nombre||!caso){
-alert("Complete todos los campos");
+alert("Debe completar todos los campos");
 return;
 }
 
@@ -101,69 +139,136 @@ return;
 }
 
 resultado.innerText=data.resultado;
+citacionBox.innerText="";
 
 }catch(e){
 alert("Error de conexión con el servidor");
 }
 }
 
-// 📄 PDF SIN CORTES
-function pdf(){
+// 🧠 HELPERS
+function nombreInput(){return document.getElementById("nombre").value.trim();}
+function casoInput(){return document.getElementById("caso").value.trim();}
+
+// 📩 CITACIÓN FORMAL
+function generarCitacion(){
+
+let nombre=nombreInput();
+let grado=document.getElementById("grado").value;
+let caso=casoInput();
+
+if(!nombre||!caso){
+alert("Primero analice el caso");
+return;
+}
+
+let texto=`
+CITACIÓN A ACUDIENTES / PADRES DE FAMILIA
+
+Fecha: ${new Date().toLocaleDateString()}
+
+Estudiante: ${nombre}
+Grado: ${grado}
+
+Motivo:
+${caso}
+
+Se solicita su presencia en la institución educativa con el fin de atender la situación presentada y realizar el respectivo proceso de acompañamiento formativo.
+
+Se agradece su puntual asistencia.
+
+Atentamente,
+
+_________________________
+Docente
+
+_________________________
+Coordinación
+
+_________________________
+Rectoría
+`;
+
+citacionBox.innerText=texto;
+}
+
+// 📄 PDF ACTA
+function pdfActa(){
+generarPDF(resultado.innerText,"acta");
+}
+
+// 📄 PDF CITACIÓN
+function pdfCitacion(){
+if(!citacionBox.innerText){
+alert("Genere la citación primero");
+return;
+}
+generarPDF(citacionBox.innerText,"citacion");
+}
+
+// 🏫 PDF INSTITUCIONAL
+function generarPDF(texto,tipo){
 
 let doc=new jsPDF();
-let texto=resultado.innerText;
-let lineas=doc.splitTextToSize(texto,180);
 
-let y=30;
+let lineas=doc.splitTextToSize(texto,170);
+let y=60;
 let pagina=1;
+let total=1;
 
-function encabezado(){
-doc.setFontSize(10);
-doc.text("INSTITUCIÓN EDUCATIVA",10,10);
+// calcular páginas
+let temp=60;
+lineas.forEach(()=>{
+if(temp>260){total++;temp=60;}
+temp+=7;
+});
+
+// encabezado
+function header(){
+doc.addImage("escudo.png","PNG",90,10,25,25);
+doc.setFontSize(11);
+doc.text("INSTITUCIÓN EDUCATIVA",105,40,{align:"center"});
+doc.setFontSize(9);
+doc.text(tipo==="acta"?"ACTA DE CONVIVENCIA":"CITACIÓN A ACUDIENTES",105,46,{align:"center"});
+doc.line(10,50,200,50);
 }
 
-function pie(){
-doc.text("Página "+pagina,180,290);
+// pie
+function footer(){
+doc.setFontSize(8);
+doc.text(`Página ${pagina} de ${total}`,180,290);
 }
 
-encabezado();
+// marca de agua
+function watermark(){
+doc.setTextColor(230,230,230);
+doc.setFontSize(40);
+doc.text("INSTITUCIONAL",35,160,{angle:45});
+doc.setTextColor(0,0,0);
+}
+
+header();
+watermark();
 
 lineas.forEach(linea=>{
-if(y>270){
-pie();
+if(y>260){
+footer();
 doc.addPage();
 pagina++;
-encabezado();
-y=30;
+header();
+watermark();
+y=60;
 }
-doc.text(linea,10,y);
+doc.text(linea,20,y);
 y+=7;
 });
 
-pie();
+footer();
 
-doc.save("acta.pdf");
-}
+let nombre=nombreInput().replace(/\s/g,"");
+let grado=document.getElementById("grado").value;
 
-// 📩 CITACIÓN AUTOMÁTICA
-function generarCitacion(){
-
-let texto=`
-CITACIÓN A ACUDIENTES/PADRES DE FAMILIA
-
-Estudiante: ${nombre.value}
-
-Motivo:
-${caso.value}
-
-Se solicita su حضور para atención del caso.
-
-Firma Docente: ____________
-Firma Coordinación: ____________
-Firma Rector (si aplica): ______________
-`;
-
-resultado.innerText=texto;
+doc.save(`${tipo}_${nombre}_${grado}.pdf`);
 }
 
 </script>
