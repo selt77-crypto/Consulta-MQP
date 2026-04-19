@@ -2,275 +2,589 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Convivencia Escolar Institucional</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Convivencia Escolar – Manuel Quintero Penilla</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <style>
-body{
-margin:0;
-font-family:'Segoe UI';
-background:
-linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
-url('fondo_estudiantes.jpg');
-background-size:cover;
-color:white;
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap');
+:root{
+  --azul:#1a3a6b; --azul2:#2b5ba8; --azul-cl:#e8eef8;
+  --oro:#c8960c; --oro-cl:#fdf6e3;
+  --rojo:#c0392b; --borde:#d0d7e5; --texto:#1c1c2e;
+  --sombra:0 4px 24px rgba(26,58,107,.14);
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background:linear-gradient(135deg,#0d2247 0%,#1a3a6b 55%,#0d3b2e 100%);min-height:100vh;padding:28px 14px 60px;color:var(--texto);}
+.card{max-width:870px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:var(--sombra);overflow:hidden;}
 
-.container{
-max-width:900px;
-margin:auto;
-background:white;
-color:black;
-padding:30px;
-margin-top:40px;
-border-radius:15px;
-text-align:center;
-}
+/* CABECERA */
+.header{background:linear-gradient(135deg,var(--azul) 0%,var(--azul2) 100%);color:#fff;padding:26px 34px 22px;display:flex;align-items:center;gap:18px;border-bottom:4px solid var(--oro);}
+.header img{width:68px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
+.header-text h1{font-family:'Merriweather',serif;font-size:1rem;font-weight:700;line-height:1.45;}
+.header-text p{font-size:.8rem;opacity:.82;margin-top:4px;}
+.header-text .ver{font-size:.73rem;background:rgba(255,255,255,.18);border-radius:30px;padding:2px 10px;display:inline-block;margin-top:6px;}
 
-.logo{
-width:90px;
-margin-bottom:10px;
-}
+/* CUERPO */
+.body{padding:28px 34px;}
+.sec{font-family:'Merriweather',serif;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--azul);border-bottom:2px solid var(--azul-cl);padding-bottom:5px;margin:22px 0 13px;}
+.lbl{display:block;font-size:.81rem;font-weight:600;color:#444;margin-bottom:4px;}
+input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--borde);border-radius:8px;font-family:'Source Sans 3',sans-serif;font-size:.88rem;background:#fafbfd;transition:border .2s,box-shadow .2s;color:var(--texto);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 3px rgba(43,91,168,.11);}
+textarea{resize:vertical;min-height:105px;}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.r3{display:grid;grid-template-columns:2fr 1fr;gap:14px;}
+.fld{margin-bottom:13px;}
+#jornadaBadge{display:inline-block;margin-top:5px;font-size:.76rem;font-weight:700;padding:2px 10px;border-radius:20px;background:var(--azul-cl);color:var(--azul);}
 
-input,textarea,select{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
+/* BOTONES ACCIÓN */
+.btn-group{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 19px;border:none;border-radius:9px;font-family:'Source Sans 3',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;transition:filter .16s,transform .1s;}
+.btn:active{transform:scale(.97);} .btn:hover{filter:brightness(1.09);}
+.btn-analizar{background:var(--azul);color:#fff;}
+.btn-cita{background:var(--oro);color:#fff;}
 
-button{
-background:#f1c40f;
-padding:10px;
-border:none;
-border-radius:8px;
-margin:5px;
-cursor:pointer;
-font-weight:bold;
-}
+/* ESTADO */
+#estado{margin-top:18px;padding:11px 15px;border-radius:8px;font-size:.86rem;font-weight:600;display:none;align-items:center;gap:9px;}
+#estado.cargando{background:#e8eef8;color:var(--azul);display:flex;}
+#estado.error{background:#fdecea;color:var(--rojo);display:flex;}
 
-#resultado,#citacion{
-background:#f9f9f9;
-padding:20px;
-margin-top:20px;
-white-space:pre-wrap;
-border-left:6px solid #1e3a8a;
-text-align:left;
-font-size:14px;
-}
+/* AVISO FUERA DE MANUAL */
+#avisoManual{background:#fff8e1;border-left:5px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 15px;margin:14px 0;font-size:.84rem;color:#7c5000;display:none;}
+
+/* BLOQUE RESULTADO */
+.res-bloque{margin-top:22px;display:none;}
+.res-header{display:flex;align-items:center;gap:10px;background:var(--azul);color:#fff;padding:9px 17px;border-radius:10px 10px 0 0;font-family:'Merriweather',serif;font-size:.88rem;}
+.tipo-badge{margin-left:auto;padding:3px 12px;border-radius:20px;font-family:'Source Sans 3',sans-serif;font-size:.75rem;font-weight:700;background:rgba(255,255,255,.2);}
+
+/* Contenido HTML del acta */
+.res-cuerpo{border:2px solid var(--azul);border-top:none;border-radius:0 0 10px 10px;background:#fff;padding:20px 24px;font-size:.86rem;line-height:1.72;max-height:560px;overflow-y:auto;}
+.res-cuerpo .a-inst{text-align:center;font-family:'Merriweather',serif;font-size:.9rem;font-weight:700;color:var(--azul);}
+.res-cuerpo .a-sub{text-align:center;font-size:.74rem;color:#777;margin-bottom:10px;}
+.res-cuerpo .a-titulo{text-align:center;font-family:'Merriweather',serif;font-weight:700;font-size:.95rem;color:#fff;background:var(--azul);padding:7px 16px;border-radius:6px;margin:8px 0 12px;display:block;}
+.res-cuerpo .a-sec{font-weight:700;color:var(--azul);font-size:.81rem;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 3px;border-bottom:1px solid var(--azul-cl);padding-bottom:2px;display:block;}
+.res-cuerpo .a-aviso{background:#fff8e1;border-left:4px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;font-size:.82rem;color:#7c5000;margin:8px 0;display:block;}
+.res-cuerpo .a-sancion{background:#fef2f2;border-left:4px solid var(--rojo);padding:8px 12px;border-radius:0 6px 6px 0;font-size:.82rem;color:#7c1111;margin:8px 0;display:block;}
+.res-cuerpo hr{border:none;margin:8px 0;}
+.res-cuerpo hr.h1{border-top:2px solid var(--azul);}
+.res-cuerpo hr.h2{border-top:1px dashed #bbb;}
+.res-cuerpo p{margin:2px 0;}
+
+/* DESCARGA */
+.dl-group{margin-top:11px;display:flex;flex-wrap:wrap;gap:9px;}
+.btn-pdf{background:var(--rojo);color:#fff;}
+.btn-word{background:#1a6bb5;color:#fff;}
+
+/* CITACIÓN */
+.cita-bloque{margin-top:30px;display:none;}
+.cita-header{background:var(--oro);color:#fff;padding:9px 17px;border-radius:10px 10px 0 0;font-family:'Merriweather',serif;font-size:.88rem;display:flex;align-items:center;gap:8px;}
+.cita-cuerpo{border:2px solid var(--oro);border-top:none;border-radius:0 0 10px 10px;background:#fffdf4;padding:20px 24px;font-size:.86rem;line-height:1.72;max-height:430px;overflow-y:auto;}
+
+.div{border:none;border-top:1.5px solid var(--borde);margin:26px 0;}
+.pie{font-size:.71rem;color:#999;text-align:center;margin-top:20px;}
+.spinner{width:17px;height:17px;border-radius:50%;border:3px solid rgba(26,58,107,.2);border-top-color:var(--azul);animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:600px){.body{padding:18px 16px;}.r2,.r3{grid-template-columns:1fr;}.header{padding:18px 16px;}.header img{width:52px;}}
 </style>
 </head>
 
 <body>
+<div class="card">
 
-<div class="container">
+<!-- CABECERA -->
+<div class="header">
+  <img src="escudo.png" alt="Escudo" onerror="this.style.display='none'">
+  <div class="header-text">
+    <h1>INSTITUCIÓN EDUCATIVA TÉCNICA EMPRESARIAL<br>MANUEL QUINTERO PENILLA</h1>
+    <p>Sistema de Gestión de Convivencia Escolar · Ley 1620/2013 · Decreto 1965/2013</p>
+    <span class="ver">Diseñado por Sandra E. López T. — V2.1 · 2026</span>
+  </div>
+</div>
 
-<img src="escudo.png" class="logo">
+<div class="body">
 
-<h2>
-INSTITUCIÓN EDUCATIVA MANUEL QUINTERO PENILLA<br>
-GESTIÓN DE CONVIVENCIA ESCOLAR
-</h2>
+  <div class="sec">📋 Datos del caso</div>
 
-<p class="autor">Diseñado por: Sandra E.López T - V1.0 2026</p>
+  <!-- ELABORADOR -->
+  <div class="r3">
+    <div class="fld">
+      <label class="lbl">Nombre de quien elabora el informe</label>
+      <input id="elaborador" placeholder="Ej: María González Ríos">
+    </div>
+    <div class="fld">
+      <label class="lbl">Rol</label>
+      <select id="rol">
+        <option>Docente</option>
+        <option>Director(a) de Grupo</option>
+        <option>Psico-orientador(a)</option>
+        <option>Coordinador(a)</option>
+        <option>Rector(a)</option>
+      </select>
+    </div>
+  </div>
 
-<input id="nombre" placeholder="Nombre del estudiante">
+  <!-- ESTUDIANTE + GRADO -->
+  <div class="r2">
+    <div class="fld">
+      <label class="lbl">Nombre completo del estudiante</label>
+      <input id="nombre" placeholder="Ej: Juan Pérez García">
+    </div>
+    <div class="fld">
+      <label class="lbl">Grado</label>
+      <select id="grado" onchange="actualizarJornada()">
+        <option>Pre-escolar</option>
+        <option>1°</option><option>2°</option><option>3°</option>
+        <option>4°</option><option>5°</option>
+        <option>6°1</option><option>6°2</option>
+        <option>7°1</option><option>7°2</option>
+        <option>8°1</option><option>8°2</option>
+        <option>9°1</option><option>9°2</option><option>9°3</option>
+        <option>10°1</option><option>10°2</option>
+        <option>11°1</option><option>11°2</option>
+      </select>
+      <span id="jornadaBadge">☀️ Jornada Mañana</span>
+    </div>
+  </div>
 
-<select id="grado">
-<option>Pre-escolar</option><option>1°</option><option>2°</option>
-<option>3°</option><option>4°</option><option>5°</option>
-<option>6°1</option><option>6°2</option>
-<option>7°1</option><option>7°2</option>
-<option>8°1</option><option>8°2</option>
-<option>9°1</option><option>9°2</option><option>9°3</option>
-<option>10°1</option><option>10°2</option>
-<option>11°1</option><option>11°2</option>
-</select>
+  <div class="fld">
+    <label class="lbl">Descripción detallada del caso</label>
+    <textarea id="caso" placeholder="Describa los hechos: personas involucradas, lugar, hora, contexto y antecedentes…"></textarea>
+  </div>
 
-<textarea id="caso" placeholder="Describa el caso"></textarea>
+  <div class="sec">📅 Citación a padres (si aplica)</div>
+  <div class="r2">
+    <div class="fld"><label class="lbl">Fecha de citación</label><input type="date" id="fecha"></div>
+    <div class="fld"><label class="lbl">Hora de citación</label><input type="time" id="hora"></div>
+  </div>
 
-<label>Fecha citación</label>
-<input type="date" id="fecha">
+  <!-- BOTONES -->
+  <div class="btn-group">
+    <button class="btn btn-analizar" onclick="analizar()">🔍 Analizar y generar acta</button>
+    <button class="btn btn-cita" onclick="generarCitacion()">📩 Generar citación</button>
+  </div>
 
-<label>Hora citación</label>
-<input type="time" id="hora">
+  <!-- INDICADOR -->
+  <div id="estado"></div>
 
-<button onclick="analizar()">Analizar</button>
-<button onclick="generarCitacion()">Citación</button>
-<button onclick="pdfActa()">PDF Acta</button>
-<button onclick="pdfCitacion()">PDF Citación</button>
+  <!-- AVISO FUERA DE MANUAL -->
+  <div id="avisoManual">
+    ⚠️ <strong>Atención:</strong> La situación descrita no se encuentra tipificada explícitamente en el Manual de Convivencia Institucional. El análisis se fundamenta en la normativa nacional vigente aplicable.
+  </div>
 
-<div id="resultado"></div>
-<div id="citacion"></div>
+  <!-- BLOQUE ACTA -->
+  <div class="res-bloque" id="bloqueActa">
+    <div class="res-header">
+      📄 Acta de Convivencia Escolar
+      <span class="tipo-badge" id="tipoBadge"></span>
+    </div>
+    <div class="res-cuerpo" id="resultado"></div>
+    <div class="dl-group">
+      <button class="btn btn-pdf"  onclick="pdfActa()">⬇ Descargar Acta en PDF</button>
+      <button class="btn btn-word" onclick="wordActa()">⬇ Descargar Acta en Word (.doc)</button>
+    </div>
+  </div>
 
+  <!-- BLOQUE CITACIÓN -->
+  <div class="cita-bloque" id="bloqueCita">
+    <div class="cita-header">📩 Citación a Padre / Madre / Acudiente</div>
+    <div class="cita-cuerpo" id="citacion"></div>
+    <div class="dl-group">
+      <button class="btn btn-pdf"  onclick="pdfCitacion()">⬇ Descargar Citación en PDF</button>
+      <button class="btn btn-word" onclick="wordCitacion()">⬇ Descargar Citación en Word (.doc)</button>
+    </div>
+  </div>
+
+  <hr class="div">
+  <p class="pie">Base legal: Manual MQP · Ley 1620/2013 · Decreto 1965/2013 · Ley 1098/2006 (C.I.A.) · Decreto 2737/1989 · Ley 115/1994 · Ley 599/2000 (C.P.) · Directivas MEN</p>
+
+</div>
 </div>
 
 <script>
-
 const { jsPDF } = window.jspdf;
+let actaTextoPlano = "";
+let citaTextoPlano = "";
 
-// 🧠 MOTOR EXPERTO CORRECTO
-function analizar(){
+/* ── JORNADA ── */
+function actualizarJornada(){
+  document.getElementById("jornadaBadge").textContent = getJornada(val("grado"));
+}
+function getJornada(g){
+  if(/pre-escolar|^[1-5]°/i.test(g)) return "☀️ Jornada Mañana";
+  if(/^[6-9]°/i.test(g))             return "🌤 Jornada Tarde";
+  if(/^1[01]°/i.test(g))             return "🕐 Jornada Única";
+  return "";
+}
+window.addEventListener("DOMContentLoaded", actualizarJornada);
 
-let nombre=val("nombre");
-let grado=val("grado");
-let casoOriginal=val("caso");
-let caso=casoOriginal.toLowerCase();
+/* ── BASE MANUAL MQP ── */
+const MANUAL = `MANUAL DE CONVIVENCIA IE TÉCNICA EMPRESARIAL MANUEL QUINTERO PENILLA (Cartago, Valle).
+Coordinadora: Esp. Lucero Estrada Esquivel.
 
-if(!nombre||!caso){
-alert("Complete todos los campos");
-return;
+TIPO I (Art. 33): Conflictos menores. Irrespeto leve, lenguaje soez ocasional, incumplimiento de deberes, uso indebido del uniforme, impuntualidad, uso no autorizado del celular, daños leves.
+Ruta: 1ª vez→diálogo docente en privado. 2ª vez→anotación en observador firmada por estudiante. 3ª vez→director de grupo cita representante legal + COMPROMISO A. Incumplir Compromiso A escala a Tipo II.
+
+TIPO II (Art. 33): Agresión física, verbal, gestual, relacional o electrónica repetida o con daño leve. Bullying, ciberbullying, amenazas, altercados físicos sin incapacidad.
+Ruta: 1ª vez→coordinación, CITACIÓN OBLIGATORIA, proceso disuasivo 1-3 días, COMPROMISO B. 2ª vez→proceso disuasivo 4-10 días, COMPROMISO C. 3ª vez→COMPROMISO D ante Consejo de Disciplina.
+
+TIPO III (Art. 33): Presuntos delitos (Ley 599/2000), violencia sexual (Ley 1146/2007), porte/tráfico de armas, SPA, lesiones con incapacidad, extorsión.
+Ruta: Rector informa a Policía/Fiscalía/ICBF/Comisaría. Comité de Convivencia activado. Citación INMEDIATA. Atención psicosocial a víctimas.
+
+NORMAS COMPLEMENTARIAS: Ley 1098/2006 CIA, Decreto 2737/1989 Código del Menor, Directivas MEN, Ley 599/2000 Código Penal.`;
+
+/* ── CLASIFICADOR LOCAL ── */
+function clasificarLocal(c){
+  if(/arma|pistola|cuchillo|navaja|droga|marihuana|bazuco|tráfico|violaci[oó]n|abuso sexual|acoso sexual|extorsi[oó]n|lesion.{0,10}grave|incapacidad/.test(c)) return 3;
+  if(/golpe|puñetaz|pelea|riña|agresi[oó]n|bullying|acoso|matoneo|humillaci[oó]n|amenaza|ciberbullying|empuj[oó]|mordi[oó]|jaló.*pelo|reiterado|sistemático/.test(c)) return 2;
+  if(/irrespeto|groser[íi]a|uniforme|tardi[ao]|impuntual|celular|vocabulario|incumpl|desobediencia|burla|interrumpi/.test(c)) return 1;
+  return 0;
 }
 
-let tipo, analisis, ruta, medidas, citacion;
+/* ── ANALIZAR PRINCIPAL ── */
+async function analizar(){
+  const nombre = val("nombre"), grado = val("grado"), caso = val("caso");
+  const elab = val("elaborador"), rol = val("rol");
+  if(!nombre||!caso){alert("Complete el nombre del estudiante y la descripción del caso.");return;}
 
-if(/arma|droga|lesión|grave|policía/.test(caso)){
-tipo="TIPO III – SITUACIÓN GRAVE";
-analisis="Se evidencia una conducta que afecta gravemente la integridad física o la convivencia escolar.";
-ruta="- Activación del Comité de Convivencia\n- Remisión a entidades externas";
-medidas="- Citación inmediata\n- Registro disciplinario\n- Aplicación de sanciones";
-citacion="OBLIGATORIA";
-}
-else if(/golpe|agredir|groser|irrespeto|reiter/.test(caso)){
-tipo="TIPO II – AFECTA LA CONVIVENCIA";
-analisis="Conducta reiterada que afecta el respeto y el ambiente escolar.";
-ruta="- Registro en observador\n- Seguimiento por coordinación";
-medidas="- Compromiso pedagógico\n- Actividades formativas\n- Seguimiento";
-citacion="RECOMENDADA";
-}
-else{
-tipo="TIPO I – SITUACIÓN LEVE";
-analisis="Conducta ocasional que puede corregirse pedagógicamente.";
-ruta="- Manejo en aula\n- Seguimiento docente";
-medidas="- Llamado de atención\n- Orientación formativa";
-citacion="NO NECESARIA";
-}
+  const tipoLocal = clasificarLocal(caso.toLowerCase());
+  const fueraManual = tipoLocal === 0;
+  document.getElementById("avisoManual").style.display = fueraManual ? "block" : "none";
+  mostrarEstado("cargando","Consultando manual de convivencia y bases legales nacionales…");
 
-// 📄 ACTA COMPLETA
-let texto=`
-ACTA DE CONVIVENCIA ESCOLAR
-
-Fecha: ${new Date().toLocaleDateString()}
-Hora: ${new Date().toLocaleTimeString()}
-
-Estudiante: ${nombre}
-Grado: ${grado}
-
-DESCRIPCIÓN DEL CASO:
-${casoOriginal}
-
-CLASIFICACIÓN:
-${tipo}
-
-ANÁLISIS PEDAGÓGICO:
-${analisis}
-
-RUTA DE ATENCIÓN:
-${ruta}
-
-MEDIDAS PEDAGÓGICAS:
-${medidas}
-
-DECISIÓN SOBRE CITACIÓN:
-${citacion}
-
-FUNDAMENTO LEGAL:
-Ley 1620 de 2013
-Decreto 1965 de 2013
-
-FIRMAS:
-
-Docente: ________________________________
-
-Coordinación: ___________________________
-
-Rectoría: _______________________________
-`;
-
-resultado.innerText=texto;
+  try{
+    const {html,texto} = await generarActaIA(nombre,grado,caso,elab,rol,tipoLocal);
+    actaTextoPlano = texto;
+    mostrarActa(html,tipoLocal,fueraManual);
+    ocultarEstado();
+  }catch(e){
+    const {html,texto} = generarActaLocal(nombre,grado,caso,elab,rol,tipoLocal||1,fueraManual);
+    actaTextoPlano = texto;
+    mostrarActa(html,tipoLocal||1,fueraManual);
+    mostrarEstado("error","Sin conexión a IA. Se usó el motor local del manual.");
+    setTimeout(ocultarEstado,4000);
+  }
 }
 
-// 📩 CITACIÓN
-function generarCitacion(){
+/* ── LLAMADA A CLAUDE API ── */
+async function generarActaIA(nombre,grado,caso,elab,rol,tipoHint){
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const hora  = hoy.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});
+  const jornada = getJornada(grado).replace(/[^\w\sáéíóúÁÉÍÓÚüÜñÑ]/g,"").trim();
+  const nombreM = nombre.toUpperCase();
 
-let nombre=val("nombre");
-let grado=val("grado");
-let caso=val("caso");
-let fecha=val("fecha");
-let hora=val("hora");
+  const system = `Eres experto en convivencia escolar colombiana. Redactas actas CONCISAS y formales para la IE Manuel Quintero Penilla (Cartago, Valle). Coordinadora: Esp. Lucero Estrada Esquivel.
 
-if(!fecha||!hora){
-alert("Ingrese fecha y hora");
-return;
+BASE DE CONOCIMIENTO:
+${MANUAL}
+
+INSTRUCCIONES DE REDACCIÓN:
+- Acta concisa: máximo 280 palabras efectivas. Sin relleno.
+- Escribe SIEMPRE el nombre del estudiante en MAYÚSCULAS SOSTENIDAS.
+- Escribe la clasificación en MAYÚSCULAS SOSTENIDAS: SITUACIÓN TIPO I, II o III.
+- Si el caso NO encaja en el manual, inicia con: "AVISO: Esta situación no está tipificada en el manual. Se aplica [norma]."
+- Incluye sección "SANCIONES SUGERIDAS" con 2-3 opciones concretas y proporcionales.
+- No uses markdown, asteriscos ni guiones decorativos.
+- Encabeza cada sección con número romano y nombre: "I. DATOS", "II. CLASIFICACIÓN", etc.
+- Termina con bloque de firmas.
+- Solo texto plano. Sin explicaciones fuera del acta.`;
+
+  const user = `Fecha: ${fecha} | Hora: ${hora}
+Estudiante: ${nombreM} | Grado: ${grado} | Jornada: ${jornada}
+Elabora: ${elab||"---"} — ${rol}
+Descripción del caso: ${caso}
+Clasificación sugerida: ${tipoHint>0?"Tipo "+tipoHint:"No tipificado en manual — aplicar norma nacional"}
+
+Redacta el acta.`;
+
+  const resp = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:950,
+      system,
+      messages:[{role:"user",content:user}]
+    })
+  });
+  if(!resp.ok) throw new Error("API "+resp.status);
+  const data = await resp.json();
+  const texto = data.content?.find(b=>b.type==="text")?.text||"";
+  if(!texto) throw new Error("vacío");
+  return {html:textoAHtml(texto,nombre), texto};
 }
 
-let texto=`
-CITACIÓN A PADRES DE FAMILIA
+/* ── GENERADOR LOCAL (fallback) ── */
+function generarActaLocal(nombre,grado,caso,elab,rol,tipo,fueraManual){
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const hora  = hoy.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});
+  const jornada = getJornada(grado).replace(/[^\w\sáéíóúÁÉÍÓÚüÜñÑ]/g,"").trim();
+  const N = nombre.toUpperCase();
 
-Fecha: ${fecha}
-Hora: ${hora}
+  const d = {
+    1:{
+      tipo:"SITUACIÓN TIPO I – LEVE",
+      analisis:"Conducta puntual corregible pedagógicamente (Art. 33 Manual / Decreto 1965/2013 Art. 40 lit. a). No afecta gravemente la convivencia.",
+      ruta:"1ª vez: diálogo reflexivo del docente.\n2ª vez: anotación en observador firmada por el estudiante.\n3ª vez: director(a) de grupo cita al representante legal + COMPROMISO A. Incumplir el Compromiso A escala a Tipo II.",
+      sanciones:"a) Llamado de atención verbal con compromiso firmado por el estudiante.\nb) Actividad reflexiva escrita relacionada con la conducta.\nc) En reincidencia: Compromiso A firmado por representante legal ante el director de grupo.",
+      citacion:"No obligatoria en primera instancia. Recomendada en tercera reincidencia para firma de COMPROMISO A.",
+      legal:"Manual MQP Art. 33-34 · Ley 1620/2013 Art. 39-40 · Dec. 1965/2013 Art. 40 lit. a) · Ley 1098/2006 Art. 42-44"
+    },
+    2:{
+      tipo:"SITUACIÓN TIPO II – AFECTA LA CONVIVENCIA",
+      analisis:"Conducta repetida o agresión que afecta el ambiente escolar (Art. 33 Manual / Dec. 1965/2013 Art. 39-40 lit. b). Puede constituir bullying o ciberbullying según Ley 1620/2013 Art. 2.",
+      ruta:"1ª vez: coordinación recepciona, CITACIÓN OBLIGATORIA, proceso disuasivo 1-3 días hábiles, COMPROMISO B.\n2ª vez: proceso disuasivo 4-10 días, COMPROMISO C.\n3ª vez: COMPROMISO D ante Consejo de Disciplina con representante legal.",
+      sanciones:"a) Proceso disuasivo corto (1-3 días) con trabajo reflexivo y cartelera relacionada con la conducta.\nb) Acto de reparación pública o privada hacia la persona afectada.\nc) En reincidencia: proceso disuasivo largo (4-10 días) y posible suspensión preventiva (previa aprobación Consejo Directivo).",
+      citacion:"OBLIGATORIA. Citar antes de iniciar el proceso disuasivo.",
+      legal:"Manual MQP Art. 33-34-35 · Ley 1620/2013 Art. 39-43 · Dec. 1965/2013 Art. 39-40 lit. b) · Ley 1098/2006 Art. 44"
+    },
+    3:{
+      tipo:"SITUACIÓN TIPO III – GRAVE / PRESUNTO DELITO",
+      analisis:"Conducta con características de presunto delito o vulneración grave de derechos fundamentales (Art. 33 Manual / Dec. 1965/2013 Art. 40 lit. c). Trasciende el ámbito escolar.",
+      ruta:"1. Activar COMITÉ DE CONVIVENCIA ESCOLAR de forma inmediata.\n2. Rector(a) emite informe a Policía Nacional / Fiscalía / ICBF / Comisaría de Familia según la conducta.\n3. Notificación inmediata a representantes legales de todos los involucrados.\n4. Brindar atención psicosocial a la víctima.\n5. Preservar evidencias disponibles.",
+      sanciones:"a) Remisión a autoridades competentes: Policía, Fiscalía, ICBF o Comisaría de Familia.\nb) Suspensión preventiva inmediata del agresor si existe riesgo inminente.\nc) Posible cancelación de matrícula / pérdida de cupo (Art. 37 Manual, previa decisión del Consejo Directivo).",
+      citacion:"OBLIGATORIA E INMEDIATA para representantes legales de todos los involucrados.",
+      legal:"Manual MQP Art. 33-34-37 · Ley 1620/2013 Art. 40 · Dec. 1965/2013 Art. 40 lit. c) · Ley 1098/2006 Art. 11, 44, 67 · Dec. 2737/1989 Art. 30-31 · Ley 599/2000 C.P."
+    }
+  }[tipo] || {
+    tipo:"SITUACIÓN NO TIPIFICADA EN EL MANUAL",
+    analisis:"La conducta descrita no encuadra en los tipos I, II o III del Manual de Convivencia. Se aplica la Ley 1098/2006 (Código de la Infancia y Adolescencia) y las Directivas MEN vigentes para su atención integral.",
+    ruta:"1. Reportar al coordinador y al rector para valoración conjunta.\n2. Si implica vulneración de derechos del menor: notificar al ICBF o Defensor de Familia (Ley 1098/2006 Art. 18).\n3. Documentar el caso en el observador del estudiante.\n4. Citar al representante legal para informar y establecer compromisos.\n5. Activar el Comité de Convivencia si la gravedad lo amerita.",
+    sanciones:"a) Acompañamiento psicosocial por parte de orientación escolar.\nb) Establecimiento de compromisos pedagógicos formales con el estudiante y su familia.\nc) Remisión a entidades externas de apoyo (ICBF, Comisaría de Familia, Secretaría de Educación) según la naturaleza del caso.",
+    citacion:"RECOMENDADA para informar y establecer compromisos con la familia.",
+    legal:"Ley 1098/2006 CIA Art. 18, 42-44, 67 · Dec. 2737/1989 Art. 30-31 · Directiva MEN 08/2016 · Ley 1620/2013 Art. 40"
+  };
 
-Estudiante: ${nombre}
-Grado: ${grado}
+  const avisoLinea = fueraManual
+    ? `AVISO: Esta situación no se encuentra tipificada en el Manual de Convivencia Institucional. El análisis se basa en la normativa nacional vigente aplicable.\n\n`
+    : "";
 
-Motivo:
+  const texto = `REPÚBLICA DE COLOMBIA – IE TÉCNICA EMPRESARIAL MANUEL QUINTERO PENILLA
+CARTAGO, VALLE DEL CAUCA | NIT 836000190-4
+
+ACTA DE CONVIVENCIA ESCOLAR N.° __________
+${fecha} – ${hora}
+
+${avisoLinea}I. DATOS
+Estudiante: ${N}
+Grado: ${grado} | Jornada: ${jornada}
+Elabora: ${elab||"_______________________"} – ${rol}
+
+II. CLASIFICACIÓN
+${d.tipo}
+
+III. DESCRIPCIÓN DE LOS HECHOS
 ${caso}
 
-Se solicita su presencia en la institución para atender la situación presentada.
+IV. ANÁLISIS PEDAGÓGICO
+${d.analisis}
+
+V. RUTA DE ATENCIÓN
+${d.ruta}
+
+VI. SANCIONES SUGERIDAS
+${d.sanciones}
+
+VII. CITACIÓN A REPRESENTANTE LEGAL
+${d.citacion}
+
+VIII. FUNDAMENTO LEGAL
+${d.legal}
+
+IX. COMPROMISOS Y SEGUIMIENTO
+Compromiso del estudiante: ________________________________
+Próxima fecha de seguimiento: _____________________________
+
+X. FIRMAS
+${elab||"Docente"} – ${rol}: _______________________  Firma: ___________
+
+Coordinadora Esp. Lucero Estrada Esquivel: ____________  Firma: ___________
+
+Rector(a): _______________________________  Firma: ___________
+
+Estudiante ${N}: ______________________  Firma: ___________
+
+Representante legal: ____________________  Firma: ___________`;
+
+  return {html:textoAHtml(texto,nombre), texto};
+}
+
+/* ── TEXTO PLANO → HTML CON RESALTADO ── */
+function textoAHtml(texto,nombre){
+  const N = nombre.toUpperCase();
+  // Escapar HTML
+  let h = texto.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+  // Resaltar nombre en MAYÚSCULAS (solo ocurrencias en mayús para no romper texto normal)
+  if(N){
+    const reName = new RegExp(N.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g");
+    h = h.replace(reName,`<strong style="color:#1a3a6b;">${N}</strong>`);
+  }
+
+  // Resaltar clasificaciones TIPO
+  h = h.replace(/(SITUACI[ÓO]N\s+TIPO\s+(?:I{1,3}|IV|[123])[^\n<]*)/g,
+    '<strong style="color:#c0392b;font-size:.92rem;">$1</strong>');
+
+  // Procesar línea a línea
+  return h.split("\n").map(l=>{
+    const lt = l.trim();
+    if(lt==="") return '<p style="margin:4px 0"> </p>';
+    if(/^═{3,}/.test(lt))  return '<hr class="h1">';
+    if(/^─{3,}/.test(lt))  return '<hr class="h2">';
+    if(/^REPÚBLICA|^IE T[ÉE]CNICA/.test(lt)) return `<p class="a-inst">${l}</p>`;
+    if(/^CARTAGO|^NIT\s/.test(lt))            return `<p class="a-sub">${l}</p>`;
+    if(/^ACTA DE CONVIVENCIA/.test(lt))        return `<span class="a-titulo">${l}</span>`;
+    if(/^[IVX]+\.\s/.test(lt))                return `<span class="a-sec">${l}</span>`;
+    if(/^AVISO:/.test(lt))                     return `<span class="a-aviso">${l}</span>`;
+    if(/^SANCIONES SUGERIDAS/i.test(lt))       return `<span class="a-sec" style="color:#c0392b;">${l}</span>`;
+    return `<p>${l}</p>`;
+  }).join("");
+}
+
+/* ── MOSTRAR ACTA EN PANTALLA ── */
+function mostrarActa(html,tipo,fueraManual){
+  const etiq={1:"TIPO I – LEVE",2:"TIPO II – MODERADO",3:"TIPO III – GRAVE",0:"FUERA DEL MANUAL"};
+  document.getElementById("resultado").innerHTML = html;
+  document.getElementById("tipoBadge").textContent = etiq[tipo]||"ANALIZADO";
+  document.getElementById("bloqueActa").style.display = "block";
+  document.getElementById("bloqueActa").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ── CITACIÓN A PADRES ── */
+function generarCitacion(){
+  const nombre=val("nombre"),grado=val("grado"),caso=val("caso");
+  const fecha=val("fecha"),hora=val("hora");
+  const elab=val("elaborador"),rol=val("rol");
+
+  if(!nombre||!caso){alert("Complete el nombre y la descripción del caso.");return;}
+  if(!fecha||!hora){alert("Ingrese la fecha y hora de la citación.");return;}
+
+  const hoy    = new Date();
+  const hoyFmt = hoy.toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"});
+  const citObj = new Date(fecha+"T"+hora);
+  const citFmt = citObj.toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const horFmt = citObj.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});
+  const jornada = getJornada(grado).replace(/[^\w\sáéíóúÁÉÍÓÚüÜñÑ]/g,"").trim();
+  const N = nombre.toUpperCase();
+
+  const texto = `REPÚBLICA DE COLOMBIA
+IE TÉCNICA EMPRESARIAL MANUEL QUINTERO PENILLA
+CARTAGO, VALLE DEL CAUCA | NIT 836000190-4 | Código DANE 176147000678
+
+CITACIÓN A PADRE / MADRE / ACUDIENTE
+
+Cartago, ${hoyFmt}
+
+Señor(a): ___________________________________________
+Representante legal de: ${N}
+Grado: ${grado}  |  Jornada: ${jornada}
+
+Estimado(a) padre o madre de familia:
+
+La Institución Educativa Técnica Empresarial Manuel Quintero Penilla le cita respetuosamente para tratar una situación de convivencia relacionada con su acudido/a ${N}.
+
+MOTIVO DE LA CITACIÓN:
+${caso}
+
+DATOS DE LA REUNIÓN:
+Fecha:  ${citFmt}
+Hora:   ${horFmt}
+Lugar:  Coordinación de Convivencia – IE Manuel Quintero Penilla
+
+INDICACIONES IMPORTANTES:
+• Su asistencia puntual es fundamental para el proceso formativo de ${N}.
+• Si no puede asistir, comuníquese con coordinación para reprogramar.
+• Esta citación se realiza en el marco de la Ley 1620/2013 y el Art. 45 del Manual de Convivencia.
+• La corresponsabilidad familia-escuela es esencial (Ley 1098/2006, Art. 10 y 39).
 
 Atentamente,
 
-Docente: ________________________________
+${elab||"___________________________"}
+${rol} – IE Manuel Quintero Penilla
 
-Coordinación: ___________________________
+Esp. Lucero Estrada Esquivel
+Coordinadora de Convivencia Escolar
 
-Rectoría: _______________________________
-`;
+___________________________
+Rectoría
 
-citacion.innerText=texto;
+────────────────────────────────────────────
+Recibido por: ______________________  C.C.: ____________________
+Fecha de recibido: _________________  Firma: ____________________`;
+
+  citaTextoPlano = texto;
+  document.getElementById("citacion").innerHTML = textoAHtml(texto,nombre);
+  document.getElementById("bloqueCita").style.display = "block";
+  document.getElementById("bloqueCita").scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
-// 🏫 PDF BIEN FORMATEADO
-function crearPDF(texto,nombre){
-
-let doc=new jsPDF();
-
-doc.addImage("escudo.png","PNG",90,10,25,25);
-
-doc.setFont("Times","Normal");
-doc.setFontSize(11);
-
-let lineas=doc.splitTextToSize(texto,170);
-let y=50;
-
-lineas.forEach(linea=>{
-if(y>270){
-doc.addPage();
-doc.addImage("escudo.png","PNG",90,10,25,25);
-y=50;
+/* ── PDF ── */
+function crearPDF(texto,archivo){
+  if(!texto.trim()){alert("Primero genere el documento.");return;}
+  const doc = new jsPDF({unit:"mm",format:"letter"});
+  try{doc.addImage("escudo.png","PNG",86,8,24,24);}catch(e){}
+  const lineas = doc.splitTextToSize(texto,172);
+  let y=40;
+  lineas.forEach(l=>{
+    if(y>255){doc.addPage();try{doc.addImage("escudo.png","PNG",86,8,24,24);}catch(e){}y=40;}
+    const lt=l.trim();
+    const bold=/^[IVX]+\.\s|^ACTA DE|^SITUACI[ÓO]N TIPO|^REPÚBLICA|^IE T[ÉE]CNICA|^SANCIONES SUGERIDAS|^AVISO:/.test(lt);
+    doc.setFont("Times",bold?"Bold":"Normal");
+    doc.setFontSize(9.5);
+    doc.text(l,18,y);
+    y+=5.8;
+  });
+  doc.save(archivo+".pdf");
 }
-doc.text(linea,20,y);
-y+=7;
-});
+function pdfActa()    {crearPDF(actaTextoPlano,"ACTA_"+val("nombre").replace(/ /g,"_"));}
+function pdfCitacion(){crearPDF(citaTextoPlano,"CITACION_"+val("nombre").replace(/ /g,"_"));}
 
-doc.save(nombre+".pdf");
+/* ── WORD ── */
+function crearWord(htmlContenido,archivo){
+  if(!htmlContenido.trim()){alert("Primero genere el documento.");return;}
+  const doc = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page Section1{size:216mm 279mm;margin:2.5cm 2cm 2cm 2.5cm;}
+div.Section1{page:Section1;}
+body{font-family:'Times New Roman',serif;font-size:11pt;color:#1c1c2e;}
+p{line-height:1.55;margin:2px 0;} strong{font-weight:bold;}
+hr{border:none;border-top:1px solid #999;margin:6px 0;}
+.a-inst{text-align:center;font-weight:bold;color:#1a3a6b;font-size:12pt;}
+.a-sub{text-align:center;font-size:9pt;color:#666;}
+.a-titulo{display:block;text-align:center;font-weight:bold;font-size:13pt;color:#1a3a6b;border-bottom:2px solid #1a3a6b;margin:10px 0 8px;}
+.a-sec{display:block;font-weight:bold;color:#1a3a6b;font-size:10pt;text-transform:uppercase;border-bottom:1px solid #d0d7e5;margin-top:12px;padding-bottom:2px;}
+.a-aviso{display:block;background:#fff8e1;padding:6px 10px;font-size:9.5pt;color:#7c5000;margin:8px 0;}
+.h1{border-top:2px solid #1a3a6b;} .h2{border-top:1px dashed #aaa;}
+</style></head>
+<body><div class="Section1">
+<div style="text-align:center;margin-bottom:14px;">
+  <strong style="font-size:13pt;color:#1a3a6b;">IE TÉCNICA EMPRESARIAL – MANUEL QUINTERO PENILLA</strong><br>
+  <span style="font-size:9pt;color:#666;">Cartago, Valle del Cauca | NIT 836000190-4 | Código DANE 176147000678</span>
+</div>
+${htmlContenido}
+</div></body></html>`;
+
+  const blob = new Blob(["\ufeff",doc],{type:"application/msword;charset=utf-8"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href=url; a.download=archivo+".doc";
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
+function wordActa()    {crearWord(document.getElementById("resultado").innerHTML,"ACTA_"+val("nombre").replace(/ /g,"_"));}
+function wordCitacion(){crearWord(document.getElementById("citacion").innerHTML,  "CITACION_"+val("nombre").replace(/ /g,"_"));}
 
-function pdfActa(){
-crearPDF(resultado.innerText,"ACTA_CONVIVENCIA");
+/* ── HELPERS ── */
+function mostrarEstado(tipo,msg){
+  const el=document.getElementById("estado");
+  el.className=tipo; el.style.display="flex";
+  el.innerHTML=tipo==="cargando"?`<span class="spinner"></span> ${msg}`:`⚠️ ${msg}`;
 }
-
-function pdfCitacion(){
-crearPDF(citacion.innerText,"CITACION");
-}
-
-function val(id){
-return document.getElementById(id).value.trim();
-}
-
+function ocultarEstado(){document.getElementById("estado").style.display="none";}
+function val(id){return document.getElementById(id).value.trim();}
 </script>
-
 </body>
 </html>
